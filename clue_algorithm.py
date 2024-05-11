@@ -15,13 +15,15 @@ class ClueAlgorithm(object):
         # read in board
         self.board = Board(board_path)
 
-        self.notes = DetectiveNotes()
         self.ui = UI()
 
-        #
+        # TODO correct players
+        players = None
+        suspects, weapons, rooms = self.board.cards()
+        self.notes = DetectiveNotes(suspects, weapons, rooms, players)
 
     def test(self):
-        print(self.notes.test)
+        print(self.notes.cards)
         print(self.ui.test)
 
 

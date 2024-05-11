@@ -7,4 +7,5 @@ It houses all magic numbers and config values.
 BOARD_PATH = "board.csv"
 DOOR = "Door"
 HALL = " "
+PASSAGE = "Passage"
 WALL = "x"

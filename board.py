@@ -3,7 +3,7 @@ This is a module for the third slice of Clue.
 It houses and manipulates all data regarding the board.
 """
 
-from config import DOOR, HALL, WALL
+from config import DOOR, HALL, PASSAGE, WALL
 
 
 class Board(object):
@@ -17,7 +17,6 @@ class Board(object):
         """
         # game state
         self.board = None
-
         # game details
         self.weapons = None
         self.suspects = None
@@ -26,9 +25,18 @@ class Board(object):
         self.suspect_locations = {}
 
         # populate game state and details
-        self.__read_board_weapons(board_path)
+        self.__populate_board_weapons(board_path)
         self.__populate_suspects_rooms()
         self.__populate_suspect_locations()
+
+    # public methods
+    def cards(self):
+        """
+        Gets a set of all the game's cards (suspects, weapons, rooms).
+
+        rtype ({str}, {str}, {str})
+        """
+        return self.suspects, self.weapons, self.rooms
 
     # private methods
     def __populate_suspect_locations(self):
@@ -52,13 +60,13 @@ class Board(object):
         Populates self.rooms and self.suspects.
         """
         # non room and suspect tiles
-        basic_tiles = {DOOR, HALL, WALL}
+        basic_tiles = {DOOR, HALL, PASSAGE, WALL}
 
         self.rooms = set()
         self.suspects = set()
 
-        x_lim = (0, len(self.board[0]))
-        y_lim = (0, len(self.board))
+        x_lim = (0, len(self.board[0]) - 1)
+        y_lim = (0, len(self.board) - 1)
 
         for y, row in enumerate(self.board):
             for x, tile in enumerate(row):
@@ -70,7 +78,11 @@ class Board(object):
                     else:
                         self.rooms.add(tile)
 
-    def __read_board_weapons(self, board_path):
+        # don't allow ""
+        self.rooms.discard("")
+        self.suspects.discard("")
+
+    def __populate_board_weapons(self, board_path):
         """
         Reads a Clue board from a .csv file.
 

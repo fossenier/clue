@@ -5,14 +5,6 @@ It houses and manipulates all data regarding suggestions.
 
 
 class DetectiveNotes(object):
-    def __init__(self):
+    def __init__(self, suspects, weapons, rooms, players):
         self.test = "test"
-
-
-def main():
-    notes = DetectiveNotes()
-    print(notes.test)
-
-
-if __name__ == "__main__":
-    main()
+        self.cards = suspects.union(weapons).union(rooms)
