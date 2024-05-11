@@ -17,7 +17,7 @@ class ClueAlgorithm(object):
         # initialize user interface object
         self.__ui = UI()
         # get player order and cpu player
-        self.__player_order = self.ui.game_order(self.board.suspects())
+        self.__player_order = self.__ui.game_order(self.__board.suspects())
         # initialize detective notes object
         self.__notes = DetectiveNotes(
             self.__board.suspects(),
@@ -27,7 +27,7 @@ class ClueAlgorithm(object):
         )
 
         # get cpu player
-        self.__cpu_player = self.ui.cpu_player(self.__player_order)
+        self.__cpu_player = self.__ui.cpu_player(self.__player_order)
         # get player hand
         self.__hand = self.__ui.hand(
             self.__cpu_player, self.__player_order, self.__board.cards()
@@ -36,14 +36,9 @@ class ClueAlgorithm(object):
         for card in self.__hand:
             self.__notes.reveal_card(self.__cpu_player, card)
 
-    def test(self):
-        print(self.notes.cards)
-        print(self.ui.test)
-
 
 def main():
     algorithm = ClueAlgorithm(BOARD_PATH)
-    algorithm.test()
 
 
 if __name__ == "__main__":

@@ -82,6 +82,7 @@ class UI(object):
                 print(
                     f"You need {HAND_SIZE[len(players)]} cards in a hand, and you entered {len(validated_hand)}."
                 )
+                hand = None
                 continue
 
             # tell the user if an entered card is not found

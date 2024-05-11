@@ -11,6 +11,6 @@ def search_within(search_string, search_list):
     rtype str or None
     """
     for string in search_list:
-        if search_string in string:
+        if search_string.lower() in string.lower():
             return string
     return None
