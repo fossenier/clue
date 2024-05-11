@@ -3,6 +3,7 @@ This is the inferface for a third slice of Clue.
 It handles all communication between the program and the user.
 """
 
+from config import MIN_PLAYERS
 from helpers import search_within
 
 
@@ -24,12 +25,19 @@ class UI(object):
             # match input to suspects
             validated_players = [search_within(player, suspects) for player in players]
 
-            # tell the user if an input was not valid
+            # make sure at the minimum player count is satisfied
+            if len(validated_players) < MIN_PLAYERS:
+                print(
+                    f"You need at least {MIN_PLAYERS} players, and you entered {len(validated_players)}."
+                )
+                continue
+
+            # tell the user if an entered player is not found
             for i, validated_player in enumerate(validated_players):
                 if not validated_player:
                     print(f"Player {players[i]} not found.")
-                    break
 
+            # leave the while loop if all players were found
             if all(validated_players):
                 game_order = validated_players
 

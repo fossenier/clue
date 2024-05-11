@@ -13,14 +13,20 @@ from user_interface import UI
 class ClueAlgorithm(object):
     def __init__(self, board_path):
         # read in board
-        self.board = Board(board_path)
+        self.__board = Board(board_path)
+        # initialize user interface object
+        self.__ui = UI()
+        # get player order and hand
+        self.__player_order = self.ui.game_order(self.board.suspects())
 
-        self.ui = UI()
-
-        # TODO correct players
-        players = None
-        suspects, weapons, rooms = self.board.cards()
-        self.notes = DetectiveNotes(suspects, weapons, rooms, players)
+        # initialize detective notes object
+        self.__notes = DetectiveNotes(
+            self.__board.suspects(),
+            self.__board.weapons(),
+            self.__board.rooms(),
+            self.__player_order,
+            self.__hand_size,
+        )
 
     def test(self):
         print(self.notes.cards)
