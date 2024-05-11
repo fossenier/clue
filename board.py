@@ -34,9 +34,11 @@ class Board(object):
         """
         Gets a set of all the game's cards (suspects, weapons, rooms).
 
-        rtype ({str}, {str}, {str})
+        rtype {str}
         """
-        return self.__suspects, self.__weapons, self.__rooms
+        return self.__suspects.copy().union(
+            self.__weapons.copy().union(self.__rooms.copy())
+        )
 
     def rooms(self):
         """
@@ -44,7 +46,7 @@ class Board(object):
 
         rtype {str}
         """
-        return self.__rooms
+        return self.__rooms.copy()
 
     def suspects(self):
         """
@@ -52,7 +54,7 @@ class Board(object):
 
         rtype {str}
         """
-        return self.__suspects
+        return self.__suspects.copy()
 
     def weapons(self):
         """
@@ -60,7 +62,7 @@ class Board(object):
 
         rtype {str}
         """
-        return self.__weapons
+        return self.__weapons.copy()
 
     # private methods
     def __populate_suspect_locations(self):
