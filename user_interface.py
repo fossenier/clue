@@ -84,7 +84,7 @@ class UI(object):
             cards,
             condition=lambda x: len(x) == HAND_SIZE[len(players)],
             transform=lambda x: {item.strip() for item in x.split(",")},
-            error_message=f"Invalid hand for {player}.",
+            error_message=f"Invalid hand for {player}. Must have {HAND_SIZE[len(players)]} cards.",
         )
 
     def sidebar(self, cards):
