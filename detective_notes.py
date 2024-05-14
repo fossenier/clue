@@ -7,12 +7,13 @@ from config import HAND_SIZE
 
 
 class DetectiveNotes(object):
-    def __init__(self, suspects, weapons, rooms, players):
+    def __init__(self, suspects, weapons, rooms, players, sidebar):
         # raw game details
         self.__cards = suspects.union(weapons).union(rooms)
         self.__hand_size = HAND_SIZE[len(players)]
         self.__players = players
         self.__rooms = rooms
+        self.__sidebar = sidebar
         self.__suspects = suspects
         self.__weapons = weapons
 

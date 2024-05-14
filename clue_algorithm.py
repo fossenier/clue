@@ -18,6 +18,7 @@ class ClueAlgorithm(object):
         self.__ui = UI()
         # get player order and cpu player
         self.__player_order = self.__ui.game_order(self.__board.suspects())
+        self.__sidebar = self.__ui.sidebar(self.__board.cards())
         # initialize detective notes object
         self.__notes = DetectiveNotes(
             self.__board.suspects(),
