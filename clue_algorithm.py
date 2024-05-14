@@ -3,6 +3,9 @@ This is a third slice of Clue.
 It directs the player like a puppet to play the game.
 """
 
+import pickle
+import sys
+
 from config import BOARD_PATH
 
 from board import Board
@@ -42,14 +45,56 @@ class ClueAlgorithm(object):
         """
         Runs the Clue game.
         """
+
+        def __command_check(message):
+            """
+            Acts like input() but will handle commands.
+            """
+            user_input = None
+            while not user_input:
+                user_input = input(message)
+
+                # handle commands
+                if user_input == "save":
+                    self.save_game()
+                    user_input = None
+
+            return user_input
+
         cpu_accusation_made = False
+        __command_check("Press Enter to continue.")
         while not cpu_accusation_made:
             # run through player order
-            pass
+            break
+        self.__notes.draw()
+
+    def save_game(self, file_name="game_state.pkl"):
+        """
+        Saves the current game state to a file.
+        """
+        if not file_name.endswith(".pkl"):
+            file_name += ".pkl"
+        with open(file_name, "wb") as file:
+            pickle.dump(self, file)
 
 
 def main():
-    algorithm = ClueAlgorithm(BOARD_PATH)
+    algorithm = None
+
+    # read from CLI arguments
+    if len(sys.argv) < 2:
+        argument = ""
+    else:
+        argument = sys.argv[1]
+
+    if argument.startswith("--state="):
+        state_path = argument.split("=")[1]
+        # load a state object from file
+        with open(f"{state_path}.pkl", "rb") as file:
+            algorithm = pickle.load(file)
+    else:
+        algorithm = ClueAlgorithm(BOARD_PATH)
+
     algorithm.run()
 
 

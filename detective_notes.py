@@ -3,7 +3,14 @@ This is a module for the third slice of Clue.
 It houses and manipulates all data regarding suggestions.
 """
 
-from config import HAND_SIZE
+from config import (
+    CELL_BORDER,
+    CELL_SIZE,
+    HAND_SIZE,
+    IMAGE_PATH,
+    HEADER_SIZE,
+    TILE_COLOURS,
+)
 
 
 class DetectiveNotes(object):
@@ -23,6 +30,68 @@ class DetectiveNotes(object):
             player: {card: None for card in self.__cards} for player in self.__players
         }
 
+    def draw(self):
+        from PIL import Image, ImageDraw, ImageFont
+
+        self.__update()
+
+        # set the width and height of the board
+        width = len(self.__players) * CELL_SIZE + HEADER_SIZE
+        height = len(self.__cards) * CELL_SIZE + HEADER_SIZE
+
+        img = Image.new("RGBA", (width, height), color=(40, 39, 41))
+        draw = ImageDraw.Draw(img)
+        font = ImageFont.load_default()
+
+        # draw the header
+        for i, player in enumerate(self.__players):
+            draw.rectangle(
+                [
+                    (i * CELL_SIZE + HEADER_SIZE, 0),
+                    ((i + 1) * CELL_SIZE + HEADER_SIZE, HEADER_SIZE),
+                ],
+                fill=(255, 255, 255),
+            )
+            draw.text(
+                (i * CELL_SIZE + HEADER_SIZE + CELL_BORDER, CELL_BORDER),
+                player,
+                fill=(0, 0, 0),
+                font=font,
+            )
+        for j, card in enumerate(self.__cards):
+            draw.rectangle(
+                [
+                    (0, j * CELL_SIZE + HEADER_SIZE),
+                    (HEADER_SIZE, (j + 1) * CELL_SIZE + HEADER_SIZE),
+                ],
+                fill=(255, 255, 255),
+            )
+            draw.text(
+                (CELL_BORDER, j * CELL_SIZE + HEADER_SIZE + CELL_BORDER),
+                card,
+                fill=(0, 0, 0),
+                font=font,
+            )
+
+        # draw rows one at a time (there are always more cards than players)
+        for row, card in enumerate(self.__cards):
+            for col, player in enumerate(self.__players):
+                # get the colour of the cell
+                colour = TILE_COLOURS[self.__notes[player][card]]
+                draw.rectangle(
+                    [
+                        (col * CELL_SIZE + HEADER_SIZE, row * CELL_SIZE + HEADER_SIZE),
+                        (
+                            (col + 1) * CELL_SIZE + HEADER_SIZE,
+                            (row + 1) * CELL_SIZE + HEADER_SIZE,
+                        ),
+                    ],
+                    fill=colour,
+                )
+
+        img.save(IMAGE_PATH)
+        print(f"Detective notes saved to {IMAGE_PATH}.")
+
     def reveal_card(self, player, card):
         """
         Marks when a player's card is revealed.
@@ -31,3 +100,7 @@ class DetectiveNotes(object):
         str card: card that was revealed.
         """
         self.__notes[player][card] = True
+
+    def __update(self):
+        # TODO
+        pass
