@@ -78,6 +78,14 @@ class UI(object):
             error_message="Player not found.",
         )[0]
 
+    def final_accusation(self, player, accusation):
+        """
+        Tells the user the final accusation of the CPU player.
+
+        rtype (str, str, str)
+        """
+        print(f"{player} made the final accusation: {accusation}")
+
     def game_order(self, suspects):
         """
         Asks the user for the order of the players in the game.

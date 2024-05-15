@@ -96,10 +96,16 @@ class DetectiveNotes(object):
         """
         Returns a final accusation if it is guaranteed.
 
-        rtype (str, str, str)
+        rtype (str, str, str) or None
         """
+        suspect = self.__find_all_false(self.__suspects)
+        weapon = self.__find_all_false(self.__weapons)
+        room = self.__find_all_false(self.__rooms)
 
-        pass
+        if suspect and weapon and room:
+            return suspect, weapon, room
+        else:
+            return None
 
     def reveal_card(self, player, card):
         """
@@ -110,6 +116,22 @@ class DetectiveNotes(object):
         """
         self.__notes[player][card] = True
 
+    def __find_all_false(self, cards):
+        """
+        Returns a card that is false for all players.
+        This is used when determining traits of the murderer.
+
+        List(str) cards: list of cards to check for a false.
+
+
+        rtype str or None
+        """
+        for card in cards:
+            if not self.__card_status(card):
+                return card
+
+        return None
+
     def __card_status(self, card):
         """
         Returns the status of a card.
@@ -117,7 +139,7 @@ class DetectiveNotes(object):
         True for one player having the card, False for
         no players having the card, and None for incomplete knowledge.
 
-        rtype bool
+        rtype bool or None
         """
         all_false = True
         for player in self.__players:

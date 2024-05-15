@@ -74,7 +74,11 @@ class ClueAlgorithm(object):
         Handles the CPU player's turn.
         """
         # makes a final accusation when it is guaranteed
-        suspect, weapon, room = self.__notes.final_accusation()
+        accusation = self.__notes.final_accusation()
+        if accusation:
+            self.__ui.final_accusation(self.__cpu_player, accusation)
+            return True
+        
         
 
 
