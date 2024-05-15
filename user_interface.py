@@ -5,13 +5,15 @@ It handles all communication between the program and the user.
 
 from config import HAND_SIZE, MIN_PLAYERS
 from helpers import search_within
+from typing import Dict
 
 
 class UI(object):
-    def __init__(self):
+    def __init__(self, user_commands: Dict[str, callable]):
+        self.__USER_COMMANDS = user_commands
         print("Welcome to Clue!")
 
-    def get_validated_input(
+    def __get_validated_input(
         self,
         input_prompt,
         search_list,
@@ -32,12 +34,14 @@ class UI(object):
         while not valid_input:
             user_input = input(input_prompt)
             transformed_input = transform(user_input)
-            validated_input = [
-                search_within(item, search_list) for item in transformed_input
-            ]
+            # turn the input into a set to remove duplicates
+            validated_input = set(
+                [search_within(item, search_list) for item in transformed_input]
+            )
 
             if all(validated_input) and condition(validated_input):
-                valid_input = validated_input
+                # turn the input back into a list
+                valid_input = list(validated_input)
             else:
                 print(error_message)
                 if any(item is None for item in validated_input):
@@ -46,13 +50,28 @@ class UI(object):
                             print(f"{item} not found in {search_list}.")
         return valid_input
 
+    def command_enabled_input(self, message):
+        """
+        Acts like input() but will handle commands.
+        """
+        user_input = None
+        while not user_input:
+            user_input = input(message)
+
+            if user_input in self.__USER_COMMANDS.keys():
+                self.__USER_COMMANDS[user_input]()
+                print(f"Executed command: {self.__USER_COMMANDS[user_input].__name__}")
+                user_input = None
+
+        return user_input
+
     def cpu_player(self, players):
         """
         Asks the user for the CPU player.
 
         rtype str
         """
-        return self.get_validated_input(
+        return self.__get_validated_input(
             "Enter the CPU player: ",
             players,
             transform=lambda x: [x.strip()],
@@ -65,7 +84,7 @@ class UI(object):
 
         rtype [str]
         """
-        return self.get_validated_input(
+        return self.__get_validated_input(
             "Enter the order of the players, separated by commas: ",
             suspects,
             condition=lambda x: len(x) >= MIN_PLAYERS,
@@ -79,8 +98,8 @@ class UI(object):
 
         rtype {str}
         """
-        return self.get_validated_input(
-            f"Enter the hand of {player}: ",
+        return self.__get_validated_input(
+            f"Enter the hand of {player} ({HAND_SIZE[len(players)]} cards): ",
             cards,
             condition=lambda x: len(x) == HAND_SIZE[len(players)],
             transform=lambda x: {item.strip() for item in x.split(",")},
@@ -95,7 +114,7 @@ class UI(object):
         """
         if input("Is there a side bar in the game? (y/n): ").lower() == "n":
             return None
-        return self.get_validated_input(
+        return self.__get_validated_input(
             "Enter the side bar of the game: ",
             cards,
             transform=lambda x: {item.strip() for item in x.split(",")},

@@ -18,7 +18,10 @@ class ClueAlgorithm(object):
         # read in board
         self.__board = Board(board_path)
         # initialize user interface object
-        self.__ui = UI()
+        self.__USER_COMMANDS = {
+            "save": self.save_game,
+        }
+        self.__ui = UI(self.__USER_COMMANDS)
         # get player order and the sidebar
         self.__player_order = self.__ui.game_order(self.__board.suspects())
         self.__sidebar = self.__ui.sidebar(self.__board.cards())
@@ -45,24 +48,8 @@ class ClueAlgorithm(object):
         """
         Runs the Clue game.
         """
-
-        def __command_check(message):
-            """
-            Acts like input() but will handle commands.
-            """
-            user_input = None
-            while not user_input:
-                user_input = input(message)
-
-                # handle commands
-                if user_input == "save":
-                    self.save_game()
-                    user_input = None
-
-            return user_input
-
         cpu_accusation_made = False
-        __command_check("Press Enter to continue.")
+        self.__ui.command_enabled_input("Press enter to continue. ")
         while not cpu_accusation_made:
             # run through player order
             break
@@ -76,6 +63,7 @@ class ClueAlgorithm(object):
             file_name += ".pkl"
         with open(file_name, "wb") as file:
             pickle.dump(self, file)
+        print(f"Game state saved to {file_name}.")
 
 
 def main():
