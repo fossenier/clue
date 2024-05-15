@@ -22,16 +22,15 @@ class ClueAlgorithm(object):
             "save": self.save_game,
         }
         self.__ui = UI(self.__USER_COMMANDS)
-        # get player order and the sidebar
+        # get player order
         self.__player_order = self.__ui.game_order(self.__board.suspects())
-        self.__sidebar = self.__ui.sidebar(self.__board.cards())
         # initialize detective notes object
         self.__notes = DetectiveNotes(
             self.__board.suspects(),
             self.__board.weapons(),
             self.__board.rooms(),
             self.__player_order,
-            self.__sidebar,
+            self.__ui.sidebar(self.__board.cards()),
         )
 
         # get cpu player
@@ -49,11 +48,16 @@ class ClueAlgorithm(object):
         Runs the Clue game.
         """
         cpu_accusation_made = False
-        self.__ui.command_enabled_input("Press enter to continue. ")
         while not cpu_accusation_made:
-            # run through player order
-            break
-        self.__notes.draw()
+            for player in self.__player_order:
+                self.__notes.draw()
+
+                # handle the cpu turn
+                if player == self.__cpu_player:
+                    cpu_accusation_made = self.__cpu_turn()
+                # handle human turns
+                else:
+                    self.__human_turn(player)
 
     def save_game(self, file_name="game_state.pkl"):
         """
@@ -64,6 +68,14 @@ class ClueAlgorithm(object):
         with open(file_name, "wb") as file:
             pickle.dump(self, file)
         print(f"Game state saved to {file_name}.")
+
+    def __cpu_turn(self):
+        """
+        Handles the CPU player's turn.
+        """
+        # makes a final accusation when it is guaranteed
+        suspect, weapon, room = self.__notes.final_accusation()
+        
 
 
 def main():

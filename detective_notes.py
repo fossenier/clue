@@ -30,7 +30,7 @@ class DetectiveNotes(object):
             player: {card: None for card in self.__cards} for player in self.__players
         }
 
-    def draw(self):
+    def draw(self, path=IMAGE_PATH):
         from PIL import Image, ImageDraw, ImageFont
 
         self.__update()
@@ -89,8 +89,17 @@ class DetectiveNotes(object):
                     fill=colour,
                 )
 
-        img.save(IMAGE_PATH)
-        print(f"Detective notes saved to {IMAGE_PATH}.")
+        img.save(path)
+        print(f"Detective notes saved to {path}.")
+
+    def final_accusation(self):
+        """
+        Returns a final accusation if it is guaranteed.
+
+        rtype (str, str, str)
+        """
+
+        pass
 
     def reveal_card(self, player, card):
         """
@@ -100,6 +109,25 @@ class DetectiveNotes(object):
         str card: card that was revealed.
         """
         self.__notes[player][card] = True
+
+    def __card_status(self, card):
+        """
+        Returns the status of a card.
+
+        True for one player having the card, False for
+        no players having the card, and None for incomplete knowledge.
+
+        rtype bool
+        """
+        all_false = True
+        for player in self.__players:
+            # if the card is unknown, we know it's not false for all players
+            if self.__notes[player][card] is None:
+                all_false = False
+            elif self.__notes[player][card] is True:
+                return True
+
+        return False if all_false else None
 
     def __update(self):
         # TODO
