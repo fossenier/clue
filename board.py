@@ -3,7 +3,8 @@ This is a module for the third slice of Clue.
 It houses and manipulates all data regarding the board.
 """
 
-from config import DOOR, HALL, PASSAGE, WALL
+from config import DOOR, EXPLORE_RADIUS, HALL, PASSAGE, WALL
+from helpers import Node, QueueFrontier
 
 
 class Board(object):
@@ -29,6 +30,9 @@ class Board(object):
         self.__populate_suspects_rooms()
         self.__populate_suspect_locations()
 
+        self.__width = len(self.__board[0])
+        self.__height = len(self.__board)
+
     # public methods
     def cards(self):
         """
@@ -48,6 +52,59 @@ class Board(object):
 
         rtype [{str}, {str}]
         """
+        frontier = QueueFrontier()
+        # put the cpu's location in the frontier to begin exploring
+        frontier.add(
+            Node(state=self.__suspect_locations[cpu_player], parent=None, action=0)
+        )
+
+        explored_states = set()
+
+        # rooms reachable this turn
+        reachable_rooms = set()
+        # rooms reachable in the next turn
+        reachable_rooms_next_turn = set()
+
+        while not frontier.empty():
+            node = frontier.remove()
+            # steps taken to reach the current node
+            steps = 0 if not node.parent else node.parent.action
+            # do not look further than the roll and the "next turn" roll
+            if (steps + 1) > (roll + EXPLORE_RADIUS):
+                break
+            # all tiles adjacent to the current tile
+            adjacent_tiles = self.__get_neighbors(node.state)
+
+            for x, y in adjacent_tiles:
+                unexplored_node = Node(state=(x, y), parent=node, action=steps + 1)
+                if unexplored_node.state not in explored_states:
+                    explored_states.add(unexplored_node.state)
+
+                    tile = self.__board[node.state[1]][node.state[0]]
+                    if node.parent:
+                        previous_tile = self.__board[node.parent.state[1]][
+                            node.parent.state[0]
+                        ]
+
+                        if previous_tile == DOOR and tile in self.__rooms:
+                            if steps < roll:
+                                reachable_rooms.add(tile)
+                            else:
+                                reachable_rooms_next_turn.add(tile)
+
+                        elif previous_tile == PASSAGE and tile in self.__rooms:
+                            if steps < roll:
+                                reachable_rooms.add(tile)
+                            else:
+                                reachable_rooms_next_turn.add(tile)
+
+                    if tile == WALL:
+                        continue
+                    elif tile in [DOOR, HALL, PASSAGE]:
+                        # this is a regular tile that can be traversed
+                        frontier.add(unexplored_node)
+
+        return reachable_rooms, reachable_rooms_next_turn
 
     def rooms(self):
         """
@@ -77,9 +134,23 @@ class Board(object):
     def __get_neighbors(self, location):
         """
         Gets the neighbors of a location.
-        
+
         rtype [(int, int)]
         """
+        x, y = location
+        neighbors = [
+            (x - 1, y),
+            (x + 1, y),
+            (x, y - 1),
+            (x, y + 1),
+        ]
+
+        # validate the neighbors fit on the board
+        for n in neighbors:
+            if n[0] < 0 or n[1] < 0 or n[0] >= self.__width or n[1] >= self.__height:
+                neighbors.remove(n)
+
+        return neighbors
 
     def __get_tile_coords(self, tile):
         """

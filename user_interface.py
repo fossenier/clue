@@ -32,7 +32,7 @@ class UI(object):
         """
         valid_input = None
         while not valid_input:
-            user_input = input(input_prompt)
+            user_input = self.command_enabled_input(input_prompt)
             transformed_input = transform(user_input)
             # turn the input into a set to remove duplicates
             validated_input = set(

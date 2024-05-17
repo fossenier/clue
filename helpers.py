@@ -4,16 +4,21 @@ It houses all helper functions.
 """
 
 
-def search_within(search_string, search_list):
+def search_within(search_item, search_list):
     """
     This function sees if search_string is a part of any of the strings in search_list.
 
     rtype str or None
     """
-    for string in search_list:
-        if search_string.lower() in string.lower():
-            return string
-    return None
+    if type(search_item) is type(""):
+        for string in search_list:
+            if search_item.lower() in string.lower():
+                return string
+        return None
+    if type(search_item) is type(0):
+        for int in search_list:
+            if search_item == int:
+                return int
 
 
 class Node:

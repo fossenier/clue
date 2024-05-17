@@ -127,7 +127,7 @@ class DetectiveNotes(object):
         rtype str or None
         """
         for card in cards:
-            if not self.__card_status(card):
+            if self.__card_status(card) == False:
                 return card
 
         return None
