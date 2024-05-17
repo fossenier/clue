@@ -114,6 +114,19 @@ class UI(object):
             error_message=f"Invalid hand for {player}. Must have {HAND_SIZE[len(players)]} cards.",
         )
 
+    def roll(self, player):
+        """
+        Asks the user for the roll of the dice.
+
+        rtype int
+        """
+        return self.__get_validated_input(
+            f"Enter the roll for {player}: ",
+            list(range(2, 13)),
+            transform=lambda x: [int(x)],
+            error_message="Invalid roll, must be 2-12.",
+        )[0]
+
     def sidebar(self, cards):
         """
         Asks the user for the side bar of the game.

@@ -40,6 +40,15 @@ class Board(object):
             self.__weapons.copy().union(self.__rooms.copy())
         )
 
+    def get_moves(self, cpu_player, roll):
+        """
+        Gets the possible rooms the cpu can move to.
+        The first list is rooms reachable this turn.
+        The second list is rooms reachable in the next turn (roll of 7).
+
+        rtype [{str}, {str}]
+        """
+
     def rooms(self):
         """
         Gets a set of all the game's rooms.
@@ -65,6 +74,27 @@ class Board(object):
         return self.__weapons.copy()
 
     # private methods
+    def __get_neighbors(self, location):
+        """
+        Gets the neighbors of a location.
+        
+        rtype [(int, int)]
+        """
+
+    def __get_tile_coords(self, tile):
+        """
+        Gets the coordinates of a tile. (x, y).
+        Returns a list of coordinates if the tile appears in multiple places.
+
+        rtype [(int, int)]
+        """
+        positions = []
+        for y, row in enumerate(self.__board):
+            for x, t in enumerate(row):
+                if t == tile:
+                    positions.append((x, y))
+        return positions
+
     def __populate_suspect_locations(self):
         """
         Accesses the board and determines the locations of the suspects.

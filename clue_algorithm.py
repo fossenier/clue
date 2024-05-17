@@ -78,8 +78,12 @@ class ClueAlgorithm(object):
         if accusation:
             self.__ui.final_accusation(self.__cpu_player, accusation)
             return True
-        
-        
+
+        # gets roll
+        roll = self.__ui.roll(self.__cpu_player)
+
+        # explore possible moves
+        moves = self.__board.get_moves(self.__cpu_player, roll)
 
 
 def main():
