@@ -7,7 +7,7 @@ It houses all magic numbers and config values.
 HAND_SIZE = {3: 6, 4: 4, 5: 3, 6: 3}
 
 # board.py
-BOARD_PATH = "board.csv"
+BOARD_PATH = "/Users/admin/projects/monorepo/clue/board.csv"
 DOOR = "Door"
 EXPLORE_RADIUS = 7
 HALL = " "

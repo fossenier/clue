@@ -90,7 +90,9 @@ def main():
     if argument.startswith("--state="):
         state_path = argument.split("=")[1]
         # load a state object from file
-        with open(f"{state_path}.pkl", "rb") as file:
+        with open(
+            f"/Users/admin/projects/monorepo/clue/{state_path}.pkl", "rb"
+        ) as file:
             algorithm = pickle.load(file)
     else:
         algorithm = ClueAlgorithm(BOARD_PATH)
