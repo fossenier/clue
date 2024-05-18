@@ -23,7 +23,7 @@ class Board(object):
         self.__suspects = None
         self.__weapons = None
 
-        self.__suspect_locations = {}
+        self.__suspect_locations = dict()
 
         # populate game state and details
         self.__populate_board_weapons(board_path)
@@ -46,6 +46,40 @@ class Board(object):
         return self.__suspects.copy().union(
             self.__weapons.copy().union(self.__rooms.copy())
         )
+
+    def get_moves_2(self, player, roll):
+        # TODO
+        # handle the case where a player enters a room on the first turn, and can passage
+        # to another room on the second turn
+        """
+        Gets the rooms within reach of a player this turn, and next.
+
+
+        Returns a list of rooms reachable this turn (within roll) and next turn (adding EXPLORE_RADIUS).
+        rtype [{str}, {str}]
+        """
+        frontier = QueueFrontier()
+
+        player_state = self.__suspect_locations[player]
+        frontier.add(Node(state=player_state, parent=None, action=0))
+
+        # tracks pathways between two tiles
+        # ' ' -> 'Lounge' has a different effect than 'Door' -> 'Lounge'
+        explored_paths = set((None, player_state))
+        rooms_this_turn = set()
+        rooms_next_turn = set()
+
+        while not frontier.empty():
+            previous_frontier = frontier.remove()
+
+            # do not explore tiles assumed to be reachable three turns away
+            if previous_frontier.action > roll + EXPLORE_RADIUS:
+                break
+
+            adjacent_tiles = self.__get_adjacent_coordinates(
+                self.__board, previous_frontier.state
+            )
+        return
 
     def get_moves(self, cpu_player, roll):
         """
@@ -74,12 +108,10 @@ class Board(object):
             if (steps + 1) > (roll + EXPLORE_RADIUS):
                 break
             # all tiles adjacent to the current tile
-            adjacent_tiles = []
+            adjacent_tiles = list()
             the_tile = self.__board[position.state[1]][position.state[0]]
             if the_tile in self.__rooms:
-                starter_tiles = self.__get_duplicate_tiles(
-                    position.state[0], position.state[1]
-                )
+                starter_tiles = self.__get_duplicate_coordinates(position.state)
                 for starter_tile in starter_tiles:
                     adjacent_tiles.extend(self.__get_neighbors(starter_tile))
             else:
@@ -163,42 +195,69 @@ class Board(object):
         return self.__weapons.copy()
 
     # private methods
-    def __get_neighbors(self, location):
+    def __get_adjacent_coordinates(self, board, tile_coordinate):
         """
-        Gets the neighbors of a location.
+        Gets all tile coordinates that a player could step to from a given tile's coordinate.
+        Includes handling if a player is in a room. Skips walls.
 
-        rtype [(int, int)]
+        rtype {(int, int)}
         """
-        x, y = location
+        x, y = tile_coordinate
+        adjacent_coordinates = set()
+
+        tile = board[y][x]
+
+        # rooms can be exited from numerous locations
+        if tile in self.__rooms:
+            duplicate_coordinates = self.__get_duplicate_coordinates((x, y))
+            for duplicate_coordinate in duplicate_coordinates:
+                adjacent_coordinates.update(self.__get_neighbors(duplicate_coordinate))
+        else:
+            adjacent_coordinates.update(self.__get_neighbors(tile_coordinate))
+
+        return adjacent_coordinates
+
+    def __get_neighbors(self, tile_coordinate):
+        """
+        Gets the neighboring walkable tiles surrounding a location. Skips walls.
+
+        rtype {(int, int)}
+        """
+        x, y = tile_coordinate
         potential_neighbors = [
             (x - 1, y),
             (x + 1, y),
             (x, y - 1),
             (x, y + 1),
         ]
-        valid_neighbors = [
+        extant_neighbors = {
             (nx, ny)
             for nx, ny in potential_neighbors
             if 0 <= nx < self.__width and 0 <= ny < self.__height
-        ]
+        }
+        valid_neighbors = {
+            (nx, ny) for nx, ny in extant_neighbors if self.__board[ny][nx] != WALL
+        }
+
         return valid_neighbors
 
-    def __get_duplicate_tiles(self, x, y):
+    def __get_duplicate_coordinates(self, tile_coordinate):
         """
-        Given the x y coordinates of a tile, returns all coordinate
-        pairs sharing the name of the tile.
-        Returns a list of coordinates if the tile appears in multiple places.
+        Given the coordinates of a tile, returns all coordinate
+        pairs corresponding to a shared name on the board.
 
-        rtype [(int, int)]
+        rtype {(int, int)}
         """
+        x, y = tile_coordinate
         tile = self.__board[y][x]
 
-        positions = []
+        duplicate_coordinates = set()
         for y, row in enumerate(self.__board):
             for x, t in enumerate(row):
                 if t == tile:
-                    positions.append((x, y))
-        return positions
+                    duplicate_coordinates.add((x, y))
+
+        return duplicate_coordinates
 
     def __populate_suspect_locations(self):
         """
