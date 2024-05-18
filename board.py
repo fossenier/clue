@@ -47,7 +47,7 @@ class Board(object):
             self.__weapons.copy().union(self.__rooms.copy())
         )
 
-    def get_moves_2(self, player, roll):
+    def get_moves_2(self, player, roll, position=None):
         # TODO
         # handle the case where a player enters a room on the first turn, and can passage
         # to another room on the second turn
@@ -58,9 +58,25 @@ class Board(object):
         Returns a list of rooms reachable this turn (within roll) and next turn (adding EXPLORE_RADIUS).
         rtype [{str}, {str}]
         """
+
+        def room_logic(previous_tile, new_tile):
+            """
+            Handles the room logic for taking the path between two tiles.
+
+            Returns a room if the path entered a room, or None otherwise.
+            rtype str
+            """
+            if previous_tile in self.__rooms:
+                return previous_tile
+            elif previous_tile == DOOR and new_tile in self.__rooms:
+                return new_tile
+            elif previous_tile == PASSAGE and new_tile in self.__rooms:
+                return new_tile
+            return None
+
         frontier = QueueFrontier()
 
-        player_state = self.__suspect_locations[player]
+        player_state = position if position else self.__suspect_locations[player]
         frontier.add(Node(state=player_state, parent=None, action=0))
 
         # tracks pathways between two tiles
@@ -72,14 +88,49 @@ class Board(object):
         while not frontier.empty():
             previous_frontier = frontier.remove()
 
-            # do not explore tiles assumed to be reachable three turns away
+            # do not explore tiles assumed to only be reachable three turns away
             if previous_frontier.action > roll + EXPLORE_RADIUS:
                 break
 
-            adjacent_tiles = self.__get_adjacent_coordinates(
+            # tile to step from and tile coordinates adjacent to this tile
+            previous_tile = self.__board[previous_frontier.state[1]][
+                previous_frontier.state[0]
+            ]
+            adjacent_tile_coords = self.__get_adjacent_coordinates(
                 self.__board, previous_frontier.state
             )
-        return
+
+            for x, y in adjacent_tile_coords:
+                new_frontier = Node(
+                    state=(x, y),
+                    parent=previous_frontier,
+                    action=previous_frontier.action + 1,
+                )
+
+                # do not explore paths twice
+                if (
+                    new_frontier.parent.state,
+                    new_frontier.state,
+                ) not in explored_paths:
+                    explored_paths.add((new_frontier.parent.state, new_frontier.state))
+                else:
+                    continue
+
+                new_tile = self.__board[new_frontier.state[1]][new_frontier.state[0]]
+
+                # checks if the path entered a room
+                entered_room = room_logic(previous_tile, new_tile)
+                if entered_room:
+                    if new_frontier.action <= roll:
+                        rooms_this_turn.add(entered_room)
+                    else:
+                        rooms_next_turn.add(entered_room)
+
+                # the new tile is a basic traversable tile and can be explored from normally
+                if new_tile in [HALL, DOOR, PASSAGE]:
+                    frontier.add(new_frontier)
+
+        return rooms_this_turn, rooms_next_turn
 
     def get_moves(self, cpu_player, roll):
         """
@@ -133,6 +184,7 @@ class Board(object):
                             new_position.parent.state[0]
                         ]
 
+                        # started in a room and thus can move to it (no actions)
                         if initial_tile in self.__rooms:
                             if new_position.action <= roll:
                                 reachable_rooms.add(initial_tile)
@@ -230,13 +282,13 @@ class Board(object):
             (x, y - 1),
             (x, y + 1),
         ]
-        extant_neighbors = {
+        # don't access tiles outside the board or return walls
+        valid_neighbors = {
             (nx, ny)
             for nx, ny in potential_neighbors
-            if 0 <= nx < self.__width and 0 <= ny < self.__height
-        }
-        valid_neighbors = {
-            (nx, ny) for nx, ny in extant_neighbors if self.__board[ny][nx] != WALL
+            if 0 <= nx < self.__width
+            and 0 <= ny < self.__height
+            and self.__board[ny][nx] != WALL
         }
 
         return valid_neighbors
