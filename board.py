@@ -33,6 +33,9 @@ class Board(object):
         self.__width = len(self.__board[0])
         self.__height = len(self.__board)
 
+        # TODO remove me
+        self.__suspect_locations["Scarlett"] = (6, 11)
+
     # public methods
     def cards(self):
         """
@@ -71,7 +74,16 @@ class Board(object):
             if (steps + 1) > (roll + EXPLORE_RADIUS):
                 break
             # all tiles adjacent to the current tile
-            adjacent_tiles = self.__get_neighbors(position.state)
+            adjacent_tiles = []
+            the_tile = self.__board[position.state[1]][position.state[0]]
+            if the_tile in self.__rooms:
+                starter_tiles = self.__get_duplicate_tiles(
+                    position.state[0], position.state[1]
+                )
+                for starter_tile in starter_tiles:
+                    adjacent_tiles.extend(self.__get_neighbors(starter_tile))
+            else:
+                adjacent_tiles.extend(self.__get_neighbors(position.state))
 
             for x, y in adjacent_tiles:
                 new_position = Node(state=(x, y), parent=position, action=steps + 1)
@@ -171,13 +183,16 @@ class Board(object):
         ]
         return valid_neighbors
 
-    def __get_tile_coords(self, tile):
+    def __get_duplicate_tiles(self, x, y):
         """
-        Gets the coordinates of a tile. (x, y).
+        Given the x y coordinates of a tile, returns all coordinate
+        pairs sharing the name of the tile.
         Returns a list of coordinates if the tile appears in multiple places.
 
         rtype [(int, int)]
         """
+        tile = self.__board[y][x]
+
         positions = []
         for y, row in enumerate(self.__board):
             for x, t in enumerate(row):
