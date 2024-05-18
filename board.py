@@ -59,14 +59,14 @@ class Board(object):
             Node(state=self.__suspect_locations[cpu_player], parent=None, action=0)
         )
 
-        explored_states = set()
+        explored_states = set((None, self.__suspect_locations[cpu_player]))
         reachable_rooms = set()
         reachable_rooms_next_turn = set()
 
         while not frontier.empty():
             position = frontier.remove()
             # steps taken to reach the current tile
-            steps = 0 if not position.parent else position.parent.action
+            steps = position.action
             # stop exploring if taking one more step would exceed (the roll) + (expected roll next turn)
             if (steps + 1) > (roll + EXPLORE_RADIUS):
                 break
@@ -75,8 +75,11 @@ class Board(object):
 
             for x, y in adjacent_tiles:
                 new_position = Node(state=(x, y), parent=position, action=steps + 1)
-                if new_position.state not in explored_states:
-                    explored_states.add(new_position.state)
+                if (
+                    new_position.parent.state,
+                    new_position.state,
+                ) not in explored_states:
+                    explored_states.add((new_position.parent.state, new_position.state))
 
                     new_tile = self.__board[new_position.state[1]][
                         new_position.state[0]
@@ -86,11 +89,11 @@ class Board(object):
                             new_position.parent.state[0]
                         ]
 
-                        if new_tile in self.__rooms:
+                        if initial_tile in self.__rooms:
                             if new_position.action <= roll:
-                                reachable_rooms.add(new_tile)
+                                reachable_rooms.add(initial_tile)
                             else:
-                                reachable_rooms_next_turn.add(new_tile)
+                                reachable_rooms_next_turn.add(initial_tile)
 
                         if initial_tile == DOOR and new_tile in self.__rooms:
                             if new_position.action <= roll:
@@ -103,16 +106,24 @@ class Board(object):
                                 reachable_rooms.add(new_tile)
                             else:
                                 reachable_rooms_next_turn.add(new_tile)
+                        # if the cpu is in a room, it can move to a passage
+                        elif initial_tile in self.__rooms and new_tile == PASSAGE:
+                            frontier.add(new_position)
+                        # no stepping out of passages allowed
+                        elif initial_tile == PASSAGE and new_tile not in self.__rooms:
+                            continue
 
                     if new_tile == WALL:
                         continue
-                    elif new_tile in [DOOR, HALL, PASSAGE]:
+                    elif new_tile in [DOOR, HALL]:
                         # this is a regular tile that can be traversed
                         frontier.add(new_position)
                 else:
                     # do not explore tiles twice
                     pass
 
+        # no need to know that the rooms reachable this turn are reachable next
+        reachable_rooms_next_turn.difference_update(reachable_rooms)
         return reachable_rooms, reachable_rooms_next_turn
 
     def rooms(self):
