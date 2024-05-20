@@ -26,6 +26,7 @@ class Node:
         self.state = state
         self.parent = parent
         self.action = action
+        self.turn_cost = 0
 
 
 class StackFrontier:

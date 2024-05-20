@@ -7,12 +7,18 @@ It houses all magic numbers and config values.
 HAND_SIZE = {3: 6, 4: 4, 5: 3, 6: 3}
 
 # board.py
+BOARD = "board"
 BOARD_PATH = "/Users/admin/projects/monorepo/clue/board.csv"
 DOOR = "Door"
 EXPLORE_RADIUS = 7
 HALL = " "
 PASSAGE = "Passage"
 WALL = "x"
+
+LEFT = (-1, 0)
+RIGHT = (1, 0)
+UP = (0, -1)
+DOWN = (0, 1)
 
 # detective_notes.py
 CELL_BORDER = 5

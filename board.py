@@ -3,7 +3,7 @@ This is a module for the third slice of Clue.
 It houses and manipulates all data regarding the board.
 """
 
-from config import DOOR, EXPLORE_RADIUS, HALL, PASSAGE, WALL
+from config import DOOR, EXPLORE_RADIUS, HALL, PASSAGE, WALL, LEFT, RIGHT, UP, DOWN
 from helpers import Node, QueueFrontier
 
 
@@ -43,6 +43,129 @@ class Board(object):
         return self.__suspects.copy().union(
             self.__weapons.copy().union(self.__rooms.copy())
         )
+
+    def path_agent(self, player):
+        """
+        Given a player, returns a dictionary pairing each room in the
+        game with a Node representing the shortest path to that room.
+
+        rtype {str: Node}
+        """
+
+        def get_duplicate_states(state):
+            """
+            Given a state, returns all states that share the same name.
+
+            rtype {(int, int)}
+            """
+            x, y = state
+            tile = self.__get_tile(x, y)
+
+            duplicate_states = set()
+            for y, row in enumerate(self.__board):
+                for x, t in enumerate(row):
+                    if t == tile:
+                        duplicate_states.add((x, y))
+
+            return duplicate_states
+
+        def get_actions(state):
+            """
+            Given a state, returns a list of possible actions.
+
+            rtype {(int, int)}
+            """
+            possible_actions = set()
+
+            x, y = state
+            neighbors = [
+                ((x - 1, y), LEFT),
+                ((x + 1, y), RIGHT),
+                ((x, y - 1), UP),
+                ((x, y + 1), DOWN),
+            ]
+            # don't access tiles outside the board
+            valid_neighbors = [
+                ((nx, ny), action)
+                for (nx, ny), action in neighbors
+                if 0 <= nx < self.__width and 0 <= ny < self.__height
+            ]
+
+            parent_tile = self.__get_tile(x, y)
+            for (nx, ny), action in valid_neighbors:
+                tile = self.__get_tile(nx, ny)
+                # cannot walk through walls
+                if tile == WALL:
+                    continue
+                # can enter rooms from doors and passages
+                elif tile in self.__rooms:
+                    if parent_tile not in [DOOR, PASSAGE]:
+                        continue
+                    else:
+                        possible_actions.add(action)
+                # can exit rooms from doors and passages
+                elif parent_tile in self.__rooms:
+                    if tile not in [DOOR, PASSAGE]:
+                        continue
+                    else:
+                        possible_actions.add(action)
+                # can walk through halls
+                else:
+                    possible_actions.add(action)
+
+            return possible_actions
+
+        def transition_model(state, action):
+            """
+            Given a state and an action, returns the next state.
+
+            rtype (int, int)
+            """
+            return (state[0] + action[0], state[1] + action[1])
+
+        frontier = QueueFrontier()
+
+        player_state = self.__suspect_locations[player]
+        frontier.add(Node(state=player_state, parent=None, action=None))
+
+        explored_states = set(player_state)
+        pathways = dict()
+
+        while not frontier.empty():
+            current_node = frontier.remove()
+            current_tile = self.__get_tile(*current_node.state)
+
+            # when in a room, add all other instances of the room to
+            # the frontier the first time it is encountered
+            if current_tile in self.__rooms and current_tile not in pathways:
+                duplicate_states = get_duplicate_states(current_node.state)
+                for duplicate_state in duplicate_states:
+                    frontier.add(
+                        Node(state=duplicate_state, parent=current_node, action=None)
+                    )
+                    explored_states.add(duplicate_state)
+
+            actions = get_actions(current_node.state)
+            for action in actions:
+                next_state = transition_model(current_node.state, action)
+                if next_state in explored_states:
+                    continue
+
+                next_node = Node(state=next_state, parent=current_node, action=action)
+
+                if next_node.state in self.__rooms:
+                    room = self.__get_tile(next_node.state)
+                    if room not in pathways:
+                        next_node.turn_cost = current_node.turn_cost + 1
+                        pathways[room] = next_node
+
+                frontier.add(next_node)
+                explored_states.add(next_node.state)
+                print(
+                    f"Checked from {self.__get_tile(*current_node.state)} to {self.__get_tile(*next_node.state)} via {action}"
+                )
+
+        print(pathways)
 
     def get_moves_2(self, player, roll):
         # TODO
@@ -91,7 +214,7 @@ class Board(object):
 
         frontier = QueueFrontier()
 
-        player_state = position if position else self.__suspect_locations[player]
+        player_state = self.__suspect_locations[player]
         frontier.add(Node(state=player_state, parent=None, action=0))
 
         # tracks pathways between two tiles
@@ -155,96 +278,6 @@ class Board(object):
                     frontier.add(new_frontier)
 
         return rooms_this_turn, rooms_next_turn
-
-    def get_moves(self, cpu_player, roll):
-        """
-        Gets the possible rooms the cpu can move to.
-        The first list is rooms reachable this turn.
-        The second list is rooms reachable in the next turn (assuming a roll of 7).
-
-        rtype [{str}, {str}]
-        """
-        frontier = QueueFrontier()
-        # put the cpu's location in the frontier to begin exploring
-        print(f"{cpu_player} is at {self.__suspect_locations[cpu_player]}")
-        frontier.add(
-            Node(state=self.__suspect_locations[cpu_player], parent=None, action=0)
-        )
-
-        explored_states = set((None, self.__suspect_locations[cpu_player]))
-        reachable_rooms = set()
-        reachable_rooms_next_turn = set()
-
-        while not frontier.empty():
-            position = frontier.remove()
-            # steps taken to reach the current tile
-            steps = position.action
-            # stop exploring if taking one more step would exceed (the roll) + (expected roll next turn)
-            if (steps + 1) > (roll + EXPLORE_RADIUS):
-                break
-            # all tiles adjacent to the current tile
-            adjacent_tiles = list()
-            the_tile = self.__board[position.state[1]][position.state[0]]
-            if the_tile in self.__rooms:
-                starter_tiles = self.__get_duplicate_coordinates(position.state)
-                for starter_tile in starter_tiles:
-                    adjacent_tiles.extend(self.__get_neighbors(starter_tile))
-            else:
-                adjacent_tiles.extend(self.__get_neighbors(position.state))
-
-            for x, y in adjacent_tiles:
-                new_position = Node(state=(x, y), parent=position, action=steps + 1)
-                if (
-                    new_position.parent.state,
-                    new_position.state,
-                ) not in explored_states:
-                    explored_states.add((new_position.parent.state, new_position.state))
-
-                    new_tile = self.__board[new_position.state[1]][
-                        new_position.state[0]
-                    ]
-                    if new_position.parent:
-                        initial_tile = self.__board[new_position.parent.state[1]][
-                            new_position.parent.state[0]
-                        ]
-
-                        # started in a room and thus can move to it (no actions)
-                        if initial_tile in self.__rooms:
-                            if new_position.action <= roll:
-                                reachable_rooms.add(initial_tile)
-                            else:
-                                reachable_rooms_next_turn.add(initial_tile)
-
-                        if initial_tile == DOOR and new_tile in self.__rooms:
-                            if new_position.action <= roll:
-                                reachable_rooms.add(new_tile)
-                            else:
-                                reachable_rooms_next_turn.add(new_tile)
-
-                        elif initial_tile == PASSAGE and new_tile in self.__rooms:
-                            if new_position.action <= roll:
-                                reachable_rooms.add(new_tile)
-                            else:
-                                reachable_rooms_next_turn.add(new_tile)
-                        # if the cpu is in a room, it can move to a passage
-                        elif initial_tile in self.__rooms and new_tile == PASSAGE:
-                            frontier.add(new_position)
-                        # no stepping out of passages allowed
-                        elif initial_tile == PASSAGE and new_tile not in self.__rooms:
-                            continue
-
-                    if new_tile == WALL:
-                        continue
-                    elif new_tile in [DOOR, HALL]:
-                        # this is a regular tile that can be traversed
-                        frontier.add(new_position)
-                else:
-                    # do not explore tiles twice
-                    pass
-
-        # no need to know that the rooms reachable this turn are reachable next
-        reachable_rooms_next_turn.difference_update(reachable_rooms)
-        return reachable_rooms, reachable_rooms_next_turn
 
     def rooms(self):
         """
