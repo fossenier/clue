@@ -30,9 +30,6 @@ class Board(object):
         self.__populate_suspects_rooms()
         self.__populate_suspect_locations()
 
-        self.__width = len(self.__board[0])
-        self.__height = len(self.__board)
-
         # TODO remove me
         self.__suspect_locations["Scarlett"] = (6, 11)
 
@@ -47,7 +44,7 @@ class Board(object):
             self.__weapons.copy().union(self.__rooms.copy())
         )
 
-    def get_moves_2(self, player, roll, position=None):
+    def get_moves_2(self, player, roll):
         # TODO
         # handle the case where a player enters a room on the first turn, and can passage
         # to another room on the second turn
@@ -59,41 +56,38 @@ class Board(object):
         rtype [{str}, {str}]
         """
 
-        def room_logic(previous_tile, new_tile):
+        def room_logic(previous_tile, new_tile, new_tile_coordinate):
             """
             Handles the room logic for taking the path between two tiles.
 
             Returns a room if the path entered a room, or None otherwise.
-            Returns true if entered via a door (must check passage edge case).
-            rtype str, bool
+            Returns another room if there is a passage.
+            rtype str, str
             """
             if previous_tile in self.__rooms:
-                return previous_tile, False
+                return previous_tile, None
+
             elif previous_tile == DOOR and new_tile in self.__rooms:
-                return new_tile, True
+                # TODO make more elegant
+                adjacent_coordinates = self.__get_adjacent_coordinates(
+                    new_tile_coordinate
+                )
+                for x, y in adjacent_coordinates:
+                    adjacent_tile = self.__get_tile(x, y)
+                    if adjacent_tile == PASSAGE:
+                        adjacent_coordinates = self.__get_adjacent_coordinates((x, y))
+                        for x, y in adjacent_coordinates:
+                            adjacent_tile = self.__get_tile(x, y)
+                            if (
+                                adjacent_tile in self.__rooms
+                                and adjacent_tile != new_tile
+                            ):
+                                return new_tile, adjacent_tile
+                return new_tile, None
 
             elif previous_tile == PASSAGE and new_tile in self.__rooms:
-                return new_tile, False
-            return None, False
-
-        def passage_edge_case(room_tile, room_coordinate):
-            """
-            Handles the edge case where a player enters a room on the first turn, and can passage
-            to another room on the second turn.
-
-            Returns the room that can be reached via the passage.
-            rtype str
-            """
-            # pass in the room coordinate
-            # the return will be the active room, and the one reachable via the passage
-            adjacent_coordinates = self.__get_adjacent_coordinates(
-                self.__board, room_coordinate
-            )
-
-            for room in adjacent_rooms:
-                if room != room_tile:
-                    # this is the room that can be reached via the passage
-                    return room
+                return new_tile, None
+            return None, None
 
         frontier = QueueFrontier()
 
@@ -118,7 +112,7 @@ class Board(object):
                 previous_frontier.state[0], previous_frontier.state[1]
             )
             adjacent_tile_coords = self.__get_adjacent_coordinates(
-                self.__board, previous_frontier.state
+                previous_frontier.state
             )
 
             for x, y in adjacent_tile_coords:
@@ -140,12 +134,21 @@ class Board(object):
                 new_tile = self.__get_tile(new_frontier.state[0], new_frontier.state[1])
 
                 # checks if the path entered a room
-                entered_room, edge_case = room_logic(previous_tile, new_tile)
+                entered_room, edge_case_room = room_logic(
+                    previous_tile,
+                    new_tile,
+                    (new_frontier.state[0], new_frontier.state[1]),
+                )
+
                 if entered_room:
                     if new_frontier.action <= roll:
                         rooms_this_turn.add(entered_room)
                     else:
                         rooms_next_turn.add(entered_room)
+
+                # elif edge_case_room:
+                #     if new_frontier.action <= roll:
+                #         rooms_next_turn.add(edge_case_room)
 
                 # the new tile is a basic traversable tile and can be explored from normally
                 if new_tile in [HALL, DOOR, PASSAGE]:
@@ -268,7 +271,7 @@ class Board(object):
         return self.__weapons.copy()
 
     # private methods
-    def __get_adjacent_coordinates(self, board, tile_coordinate):
+    def __get_adjacent_coordinates(self, tile_coordinate):
         """
         Gets all tile coordinates that a player could step to from a given tile's coordinate.
         Includes handling if a player is in a room. Skips walls.
@@ -278,7 +281,7 @@ class Board(object):
         x, y = tile_coordinate
         adjacent_coordinates = set()
 
-        tile = board[y][x]
+        tile = self.__get_tile(x, y)
 
         # rooms can be exited from numerous locations
         if tile in self.__rooms:
@@ -394,6 +397,10 @@ class Board(object):
                 if not board:  # check if the board is empty
                     raise ValueError("The CSV file is empty.")
                 self.__board = board
+
+                self.__width = len(self.__board[0])
+                self.__height = len(self.__board)
+
                 return
         except FileNotFoundError:
             print(f"Error: The file {board_path} does not exist.")
