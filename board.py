@@ -64,15 +64,36 @@ class Board(object):
             Handles the room logic for taking the path between two tiles.
 
             Returns a room if the path entered a room, or None otherwise.
-            rtype str
+            Returns true if entered via a door (must check passage edge case).
+            rtype str, bool
             """
             if previous_tile in self.__rooms:
-                return previous_tile
+                return previous_tile, False
             elif previous_tile == DOOR and new_tile in self.__rooms:
-                return new_tile
+                return new_tile, True
+
             elif previous_tile == PASSAGE and new_tile in self.__rooms:
-                return new_tile
-            return None
+                return new_tile, False
+            return None, False
+
+        def passage_edge_case(room_tile, room_coordinate):
+            """
+            Handles the edge case where a player enters a room on the first turn, and can passage
+            to another room on the second turn.
+
+            Returns the room that can be reached via the passage.
+            rtype str
+            """
+            # pass in the room coordinate
+            # the return will be the active room, and the one reachable via the passage
+            adjacent_coordinates = self.__get_adjacent_coordinates(
+                self.__board, room_coordinate
+            )
+
+            for room in adjacent_rooms:
+                if room != room_tile:
+                    # this is the room that can be reached via the passage
+                    return room
 
         frontier = QueueFrontier()
 
@@ -93,9 +114,9 @@ class Board(object):
                 break
 
             # tile to step from and tile coordinates adjacent to this tile
-            previous_tile = self.__board[previous_frontier.state[1]][
-                previous_frontier.state[0]
-            ]
+            previous_tile = self.__get_tile(
+                previous_frontier.state[0], previous_frontier.state[1]
+            )
             adjacent_tile_coords = self.__get_adjacent_coordinates(
                 self.__board, previous_frontier.state
             )
@@ -116,10 +137,10 @@ class Board(object):
                 else:
                     continue
 
-                new_tile = self.__board[new_frontier.state[1]][new_frontier.state[0]]
+                new_tile = self.__get_tile(new_frontier.state[0], new_frontier.state[1])
 
                 # checks if the path entered a room
-                entered_room = room_logic(previous_tile, new_tile)
+                entered_room, edge_case = room_logic(previous_tile, new_tile)
                 if entered_room:
                     if new_frontier.action <= roll:
                         rooms_this_turn.add(entered_room)
@@ -288,7 +309,7 @@ class Board(object):
             for nx, ny in potential_neighbors
             if 0 <= nx < self.__width
             and 0 <= ny < self.__height
-            and self.__board[ny][nx] != WALL
+            and self.__get_tile(nx, ny) != WALL
         }
 
         return valid_neighbors
@@ -301,7 +322,7 @@ class Board(object):
         rtype {(int, int)}
         """
         x, y = tile_coordinate
-        tile = self.__board[y][x]
+        tile = self.__get_tile(x, y)
 
         duplicate_coordinates = set()
         for y, row in enumerate(self.__board):
@@ -337,8 +358,8 @@ class Board(object):
         self.__rooms = set()
         self.__suspects = set()
 
-        x_lim = (0, len(self.__board[0]) - 1)
-        y_lim = (0, len(self.__board) - 1)
+        x_lim = (0, self.__width - 1)
+        y_lim = (0, self.__height - 1)
 
         for y, row in enumerate(self.__board):
             for x, tile in enumerate(row):
@@ -380,6 +401,16 @@ class Board(object):
             print(ve)
 
         raise ValueError("The board could not be read.")
+
+    def __get_tile(self, x, y):
+        """
+        Gets a tile from the board.
+
+        int x: x-coordinate
+        int y: y-coordinate
+        rtype: str
+        """
+        return self.__board[y][x]
 
     def __set_tile(self, x, y, tile):
         """

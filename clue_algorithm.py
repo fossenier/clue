@@ -74,7 +74,7 @@ class ClueAlgorithm(object):
         roll = self.__ui.roll(self.__cpu_player)
 
         # explore possible moves
-        moves = self.__board.get_moves(self.__cpu_player, roll)
+        moves = self.__board.get_moves_2(self.__cpu_player, roll)
         print(moves)
 
 
