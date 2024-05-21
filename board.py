@@ -44,6 +44,33 @@ class Board(object):
             self.__weapons.copy().union(self.__rooms.copy())
         )
 
+    def move_player(self, player, desired_room, roll, path_data: Node):
+        """
+        Given a player, a desired room, their roll, and the path_data from path_agent,
+        moves the player towards the desired room.
+
+        Returns true if the player has reached the desired room otherwise false.
+        rtype bool
+        """
+        backtrace = []
+        walker = path_data[desired_room]
+
+        while walker:
+            backtrace.append((walker.action, walker.state))
+            walker = walker.parent
+
+        path = backtrace[::-1]
+
+        steps = 0
+        for action, state in path:
+            if action == None:
+                continue
+            steps += 1
+            if steps == roll:
+                self.__suspect_locations[player] = state
+
+        print(f"{player} moved to {self.__suspect_locations[player]}")
+
     def path_agent(self, player, roll):
         """
         Given a player and their roll, returns a dictionary pairing each room in the

@@ -75,11 +75,16 @@ class ClueAlgorithm(object):
 
         # explore possible moves
         action_space = self.__board.path_agent(self.__cpu_player, roll)
+        path_data = action_space[1]
 
         # pick destination
         rooms_turn_costs = action_space[0]
-        room = self.__notes.pick_room(rooms_turn_costs)
-        print(room)
+        desired_room = self.__notes.pick_room(rooms_turn_costs)
+
+        # travel to destination
+        self.__board.move_player(self.__cpu_player, desired_room, roll, path_data)
+
+        self.__notes.reveal_card("Mustard", input())
 
 
 def main():
