@@ -107,6 +107,32 @@ class DetectiveNotes(object):
         else:
             return None
 
+    def pick_room(self, rooms_turn_costs):
+        """
+        Given the possible moves the cpu can get to and the turns it'll take to get there,
+        picks the best room to go to.
+        """
+        # sort by proximity
+        soonest_reachable = dict()
+
+        for room, turn_cost in rooms_turn_costs:
+            # 0 (room being stood in) and 1 (rooms reachable this turn) are equivalent
+            if turn_cost == 0:
+                turn_cost = 1
+            try:
+                soonest_reachable[str(turn_cost)].append(room)
+            except KeyError:
+                soonest_reachable[str(turn_cost)] = [room]
+
+        # select the best room
+        for turn_layer in sorted(soonest_reachable.keys()):
+            if self.__choose_card_suggestion(soonest_reachable[turn_layer]) is not None:
+                suggestion = self.__choose_card_suggestion(
+                    soonest_reachable[turn_layer]
+                )
+                if suggestion:
+                    return suggestion
+
     def reveal_card(self, player, card):
         """
         Marks when a player's card is revealed.
@@ -150,6 +176,32 @@ class DetectiveNotes(object):
                 return True
 
         return False if all_false else None
+
+    def __choose_card_suggestion(self, cards):
+        """
+        Takes in cards (suspects / weapons / rooms) and returns one which is
+        the best (or simply acceptable) to suggest.
+        WARNING: If all cards are known, this will return None.
+
+        rtype str
+        """
+        acceptable_cards = []
+        for card in cards:
+            # if the card is all false, prefer it
+            if self.__card_status(card) is False:
+                return card
+            # if the card is unknown, it is acceptable
+            if self.__card_status(card) is None:
+                acceptable_cards.append(card)
+            # if a card is known, it is not an acceptable room to suggest
+            else:
+                continue
+
+        if len(acceptable_cards) > 0:
+            return acceptable_cards[0]
+        else:
+            # all cards had data on them
+            return None
 
     def __update(self):
         # TODO
