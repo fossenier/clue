@@ -44,9 +44,9 @@ class Board(object):
             self.__weapons.copy().union(self.__rooms.copy())
         )
 
-    def path_agent(self, player):
+    def path_agent(self, player, roll):
         """
-        Given a player, returns a dictionary pairing each room in the
+        Given a player and their roll, returns a dictionary pairing each room in the
         game with a Node representing the shortest path to that room.
 
         rtype {str: Node}
@@ -149,7 +149,13 @@ class Board(object):
                 duplicate_states = get_duplicate_states(current_node.state)
                 for duplicate_state in duplicate_states:
                     frontier.add(
-                        Node(state=duplicate_state, parent=current_node, action=None)
+                        Node(
+                            state=duplicate_state,
+                            parent=current_node,
+                            action=None,
+                            turn_cost=current_node.turn_cost,
+                            steps_taken=current_node.steps_taken,
+                        )
                     )
                     explored_states.add(duplicate_state)
 
@@ -159,21 +165,30 @@ class Board(object):
                 if next_state in explored_states:
                     continue
 
-                next_node = Node(state=next_state, parent=current_node, action=action)
+                next_node = Node(
+                    state=next_state,
+                    parent=current_node,
+                    action=action,
+                    turn_cost=current_node.turn_cost,
+                    steps_taken=current_node.steps_taken + 1,
+                )
+                # at the end of a player's roll, increment the turn cost
+                if next_node.steps_taken == (roll + 1):
+                    next_node.turn_cost += 1
+                # the "regular roll" steps after that, assume another turn is needed too
+                if next_node.steps_taken == (roll + 1 + EXPLORE_RADIUS):
+                    next_node.turn_cost += 1
 
                 next_tile = self.__get_tile(*next_node.state)
                 if next_tile in self.__rooms:
                     # entering a room costs a turn
-                    next_node.turn_cost = current_node.turn_cost + 1
+                    next_node.turn_cost += 1
                     if next_tile not in pathways:
+
                         pathways[next_tile] = next_node
 
                 frontier.add(next_node)
                 explored_states.add(next_node.state)
-                # TODO remove
-                print(
-                    f"Checked from {self.__get_tile(*current_node.state)} at {current_node.state} to {self.__get_tile(*next_node.state)} at {next_node.state} via {action}"
-                )
 
         return pathways
 

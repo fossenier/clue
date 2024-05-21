@@ -22,11 +22,12 @@ def search_within(search_item, search_list):
 
 
 class Node:
-    def __init__(self, state, parent, action):
+    def __init__(self, state, parent, action, turn_cost=0, steps_taken=0):
         self.state = state
         self.parent = parent
         self.action = action
-        self.turn_cost = 1
+        self.turn_cost = turn_cost
+        self.steps_taken = steps_taken
 
 
 class StackFrontier:
