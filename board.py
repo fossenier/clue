@@ -49,7 +49,10 @@ class Board(object):
         Given a player and their roll, returns a dictionary pairing each room in the
         game with a Node representing the shortest path to that room.
 
-        rtype {str: Node}
+        Returns a tuple, containing a list of tuples and a dictionary.
+        The inner tuples contain a room and the turn cost to reach it.
+        The dictionary is room: Node where Node is a chain representing the shortest path to that room.
+        rtype ([(str, int)], {str: Node})
         """
 
         def get_duplicate_states(state):
@@ -140,8 +143,8 @@ class Board(object):
             current_node = frontier.remove()
             current_tile = self.__get_tile(*current_node.state)
 
-            # when in a room, add all other instances of the room to
-            # the frontier the first time it is encountered
+            # when in a room, add all other instances of the room to the frontier
+            # the first time it is encountered since you can leave using any door
             if (
                 current_tile in self.__rooms
                 and current_node.state not in explored_states
@@ -172,6 +175,7 @@ class Board(object):
                     turn_cost=current_node.turn_cost,
                     steps_taken=current_node.steps_taken + 1,
                 )
+
                 # at the end of a player's roll, increment the turn cost
                 if next_node.steps_taken == (roll + 1):
                     next_node.turn_cost += 1
@@ -184,13 +188,12 @@ class Board(object):
                     # entering a room costs a turn
                     next_node.turn_cost += 1
                     if next_tile not in pathways:
-
                         pathways[next_tile] = next_node
 
                 frontier.add(next_node)
                 explored_states.add(next_node.state)
 
-        return pathways
+        return [(room, pathways[room].turn_cost) for room in pathways], pathways
 
     def rooms(self):
         """

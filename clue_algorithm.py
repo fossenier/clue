@@ -75,20 +75,26 @@ class ClueAlgorithm(object):
 
         # explore possible moves
         pathways = self.__board.path_agent(self.__cpu_player, roll)
-        for room in pathways:
-            pathway = pathways[room]
-            path_taken = []
-            walker = pathway
-            last_tile_coords = None
-            while walker:
-                if walker.action:
-                    path_taken.append(walker.action)
-                    last_tile_coords = walker.state
-                walker = walker.parent
-            path_taken.reverse()
-            print(
-                f"Room {room} can be reached in {len(path_taken)} moves from {last_tile_coords} at a minimum {pathway.turn_cost} turns via path{path_taken}."
-            )
+        print(pathways)
+        # for pathway in pathways:
+        #     room, turn_cost = pathway[0]
+        #     chain = pathway[1]
+        #     print(f"Room {room} can be reached in {turn_cost} turns via path{chain}.")
+
+        # for room in pathways:
+        #     pathway = pathways[room]
+        #     path_taken = []
+        #     walker = pathway
+        #     last_tile_coords = None
+        #     while walker:
+        #         if walker.action:
+        #             path_taken.append(walker.action)
+        #             last_tile_coords = walker.state
+        #         walker = walker.parent
+        #     path_taken.reverse()
+        #     print(
+        #         f"Room {room} can be reached in {len(path_taken)} moves from {last_tile_coords} at a minimum {pathway.turn_cost} turns via path{path_taken}."
+        #     )
 
 
 def main():

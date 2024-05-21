@@ -128,6 +128,7 @@ class UI(object):
         )[0]
 
     def sidebar(self, cards):
+        # TODO make it so that cards in the sidebar cannot be in the cpu hand
         """
         Asks the user for the side bar of the game.
 
