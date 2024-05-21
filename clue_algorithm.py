@@ -75,7 +75,17 @@ class ClueAlgorithm(object):
 
         # explore possible moves
         moves = self.__board.get_moves_2(self.__cpu_player, roll)
-        self.__board.path_agent(self.__cpu_player)
+        pathways = self.__board.path_agent(self.__cpu_player)
+        for room, pathway in pathways:
+            path_taken = []
+            walker = pathway
+            while walker:
+                path_taken.append(walker.action)
+                walker = walker.parent
+            path_taken.reverse()
+            print(
+                f"Room {room} can be reached in {len(path_taken)} moves at a minimum {pathway.turn_cost} turns via path{path_taken}."
+            )
         print(moves)
 
 

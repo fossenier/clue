@@ -128,7 +128,8 @@ class Board(object):
         player_state = self.__suspect_locations[player]
         frontier.add(Node(state=player_state, parent=None, action=None))
 
-        explored_states = set(player_state)
+        explored_states = set()
+        explored_states.add(player_state)
         pathways = dict()
 
         while not frontier.empty():
@@ -138,6 +139,7 @@ class Board(object):
             # when in a room, add all other instances of the room to
             # the frontier the first time it is encountered
             if current_tile in self.__rooms and current_tile not in pathways:
+                pathways[current_tile] = current_node
                 duplicate_states = get_duplicate_states(current_node.state)
                 for duplicate_state in duplicate_states:
                     frontier.add(
@@ -153,19 +155,20 @@ class Board(object):
 
                 next_node = Node(state=next_state, parent=current_node, action=action)
 
-                if next_node.state in self.__rooms:
-                    room = self.__get_tile(next_node.state)
-                    if room not in pathways:
+                next_tile = self.__get_tile(*next_node.state)
+                if next_tile in self.__rooms:
+                    if next_tile not in pathways:
                         next_node.turn_cost = current_node.turn_cost + 1
-                        pathways[room] = next_node
+                        pathways[next_tile] = next_node
 
                 frontier.add(next_node)
                 explored_states.add(next_node.state)
+                # TODO remove
                 print(
-                    f"Checked from {self.__get_tile(*current_node.state)} to {self.__get_tile(*next_node.state)} via {action}"
+                    f"Checked from {self.__get_tile(*current_node.state)} at {current_node.state} to {self.__get_tile(*next_node.state)} at {next_node.state} via {action}"
                 )
 
-        print(pathways)
+        return pathways
 
     def get_moves_2(self, player, roll):
         # TODO
