@@ -3,7 +3,20 @@ This is a module for the third slice of Clue.
 It houses and manipulates all data regarding the board.
 """
 
-from config import DOOR, EXPLORE_RADIUS, HALL, PASSAGE, WALL, LEFT, RIGHT, UP, DOWN
+from config import (
+    BOARD_IMG_PATH,
+    TILE_SIZE,
+    TILE_BORDER,
+    DOOR,
+    EXPLORE_RADIUS,
+    HALL,
+    PASSAGE,
+    WALL,
+    LEFT,
+    RIGHT,
+    UP,
+    DOWN,
+)
 from helpers import Node, QueueFrontier
 
 
@@ -43,6 +56,62 @@ class Board(object):
         return self.__suspects.copy().union(
             self.__weapons.copy().union(self.__rooms.copy())
         )
+
+    def draw(self, path=BOARD_IMG_PATH):
+        from PIL import Image, ImageDraw, ImageFont
+
+        # set the width and height of the board
+        width = self.__width * (TILE_SIZE + TILE_BORDER)
+        height = self.__height * (TILE_SIZE + TILE_BORDER)
+
+        img = Image.new(
+            "RGBA", (width, height), color=(119, 175, 120)
+        )  # updated background color
+        draw = ImageDraw.Draw(img)
+        font = ImageFont.load_default()
+
+        # draw rows one at a time
+        for y, row in enumerate(self.__board):
+            for x, tile in enumerate(row):
+                # set the colour of the cell
+                if tile == HALL:
+                    colour = (226, 200, 59)  # updated HALL color
+                elif tile == WALL:
+                    colour = (27, 31, 35)
+                else:
+                    colour = (255, 0, 0)  # default color for other tiles
+
+                # calculate the top-left and bottom-right corners of the tile
+                top_left = (
+                    x * (TILE_SIZE + TILE_BORDER),
+                    y * (TILE_SIZE + TILE_BORDER),
+                )
+                bottom_right = (
+                    (x + 1) * (TILE_SIZE + TILE_BORDER),
+                    (y + 1) * (TILE_SIZE + TILE_BORDER),
+                )
+
+                # draw the tile with its border
+                draw.rectangle(
+                    [
+                        top_left,
+                        bottom_right,
+                    ],
+                    fill=colour,
+                    outline=(119, 92, 32),  # border color
+                )
+
+                # if not HALL, draw the tile type on the tile
+                if tile not in (HALL, WALL):
+                    text_size = font.getsize(tile)
+                    text_x = top_left[0] + (TILE_SIZE + TILE_BORDER - text_size[0]) // 2
+                    text_y = top_left[1] + (TILE_SIZE + TILE_BORDER - text_size[1]) // 2
+                    draw.text(
+                        (text_x, text_y), tile, font=font, fill=(255, 255, 255)
+                    )  # white text
+
+        img.save(path)
+        print(f"Detective notes saved to {path}.")
 
     def move_player(self, player, desired_room, roll, path_data: Node):
         """
@@ -305,7 +374,7 @@ class Board(object):
                 # read weapons from first row
                 self.__weapons = set(f.readline().strip().split(","))
                 # read board from remaining rows
-                board = [line.strip().split(",") for line in f]
+                board = [line.rstrip().split(",") for line in f]
                 if not board:  # check if the board is empty
                     raise ValueError("The CSV file is empty.")
                 self.__board = board

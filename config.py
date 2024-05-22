@@ -7,6 +7,10 @@ It houses all magic numbers and config values.
 HAND_SIZE = {3: 6, 4: 4, 5: 3, 6: 3}
 
 # board.py
+BOARD_IMG_PATH = "board.png"
+TILE_SIZE = 50
+TILE_BORDER = 5
+
 BOARD = "board"
 BOARD_PATH = "/Users/admin/projects/monorepo/clue/board.csv"
 DOOR = "Door"

@@ -47,6 +47,8 @@ class ClueAlgorithm(object):
         """
         Runs the Clue game.
         """
+        self.__notes.draw()
+        self.__board.draw()
         while True:
             self.__cpu_turn()
 
