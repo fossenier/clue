@@ -47,9 +47,9 @@ class ClueAlgorithm(object):
         """
         Runs the Clue game.
         """
-        self.__notes.draw()
-        self.__board.draw()
         while True:
+            self.__board.draw(self.__cpu_player)
+            self.__notes.draw()
             self.__cpu_turn()
 
     def save_game(self, file_name="game_state.pkl"):
@@ -85,6 +85,7 @@ class ClueAlgorithm(object):
 
         # travel to destination
         self.__board.move_player(self.__cpu_player, desired_room, roll, path_data)
+        self.__board.draw(self.__cpu_player)
 
         self.__notes.reveal_card("Mustard", input())
 

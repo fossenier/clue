@@ -57,7 +57,7 @@ class Board(object):
             self.__weapons.copy().union(self.__rooms.copy())
         )
 
-    def draw(self, path=BOARD_IMG_PATH):
+    def draw(self, cpu_player, path=BOARD_IMG_PATH):
         from PIL import Image, ImageDraw, ImageFont
 
         # set the width and height of the board
@@ -79,7 +79,7 @@ class Board(object):
                 elif tile == WALL:
                     colour = (27, 31, 35)
                 else:
-                    colour = (255, 0, 0)  # default color for other tiles
+                    colour = (121, 175, 117)  # default color for other tiles
 
                 # calculate the top-left and bottom-right corners of the tile
                 top_left = (
@@ -109,6 +109,22 @@ class Board(object):
                     draw.text(
                         (text_x, text_y), tile, font=font, fill=(255, 255, 255)
                     )  # white text
+
+        # Draw the CPU player token
+        cpu_location = self.__suspect_locations[cpu_player]  # get CPU player's location
+        cpu_x, cpu_y = cpu_location
+        cpu_center = (
+            cpu_x * (TILE_SIZE + TILE_BORDER) + (TILE_SIZE + TILE_BORDER) // 2,
+            cpu_y * (TILE_SIZE + TILE_BORDER) + (TILE_SIZE + TILE_BORDER) // 2,
+        )
+        cpu_radius = TILE_SIZE // 4  # size of the token
+        draw.ellipse(
+            [
+                (cpu_center[0] - cpu_radius, cpu_center[1] - cpu_radius),
+                (cpu_center[0] + cpu_radius, cpu_center[1] + cpu_radius),
+            ],
+            fill=(200, 0, 0),  # Red token for CPU player
+        )
 
         img.save(path)
         print(f"Detective notes saved to {path}.")
