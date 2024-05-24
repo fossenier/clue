@@ -18,6 +18,7 @@ class DetectiveNotes(object):
         # raw game details
         self.__cards = suspects.union(weapons).union(rooms)
         self.__hand_size = HAND_SIZE[len(players)]
+        self.__links = dict()
         self.__players = players
         self.__rooms = rooms
         self.__sidebar = sidebar
@@ -116,6 +117,15 @@ class DetectiveNotes(object):
             return suspect, weapon, room
         else:
             return None
+
+    def make_link(self, player, suggestion):
+        """
+        Marks when a player has at least one card in a suggestion.
+        """
+        try:
+            self.__links[player].append(suggestion)
+        except KeyError:
+            self.__links[player] = [suggestion]
 
     def make_suggestion(self, room):
         """

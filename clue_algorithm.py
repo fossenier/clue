@@ -87,20 +87,38 @@ class ClueAlgorithm(object):
         self.__board.move_player(self.__cpu_player, desired_room, roll, path_data)
         self.__board.draw(self.__cpu_player)
 
-        # make suggestion
+        # make suggestion if in a room
         room = self.__board.check_room(self.__cpu_player)
         if room:
             suggestion = self.__notes.make_suggestion(room)
-            response_data = self.__ui.suggestion(
-                self.__cpu_player, self.__player_order, suggestion
-            )
-
             # update detective notes
-            for player, response in response_data:
+            for player, response in self.__ui.suggestion(
+                self.__cpu_player, self.__player_order, suggestion
+            ):
                 if response:
                     self.__notes.reveal_card(player, response)
                 else:
                     self.__notes.denied_suggestion(player, suggestion)
+
+        return
+
+    def __human_turn(self, active_player):
+        """
+        Handles the human player's turn.
+        """
+        suspects = self.__board.suspects()
+        weapons = self.__board.weapons()
+        rooms = self.__board.rooms()
+        for suggestion, player_response in self.__ui.human_suggestion(
+            active_player, self.__player_order, suspects, weapons, rooms
+        ):
+            player, response = player_response
+            if response:
+                self.__notes.make_link(player, suggestion)
+            else:
+                self.__notes.denied_suggestion(player, suggestion)
+
+        return
 
 
 def main():

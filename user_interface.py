@@ -114,6 +114,73 @@ class UI(object):
             error_message=f"Invalid hand for {player}. Must have {HAND_SIZE[len(players)]} cards.",
         )
 
+    def human_suggestion(self, active_player, player_order, suspects, weapons, rooms):
+        """
+        Gets a valid human suggestion and returns what other player's responded.
+
+        rtype ((str, str, str), [(str, str)])
+        """
+        if (
+            self.__get_validated_input(
+                input_prompt=f"Does {active_player} make a suggestion? (yes/no): ",
+                search_list=["yes", "no"],
+                transform=lambda x: x.lower(),
+                error_message="Invalid response.",
+            )
+            == "no"
+        ):
+            return None
+        suspect = self.__get_validated_input(
+            input_prompt="Enter the suspect: ",
+            search_list=suspects,
+            transform=lambda x: x.lower(),
+            error_message=f"Invalid suspect, must be from {suspects}.",
+        )
+        weapon = self.__get_validated_input(
+            input_prompt="Enter the weapon: ",
+            search_list=weapons,
+            transform=lambda x: x.lower(),
+            error_message=f"Invalid weapon, must be from {weapons}.",
+        )
+        room = self.__get_validated_input(
+            input_prompt="Enter the room: ",
+            search_list=rooms,
+            transform=lambda x: x.lower(),
+            error_message=f"Invalid room, must be from {rooms}.",
+        )
+        suggestion = (suspect, weapon, room)
+
+        # find the index of the active player
+        start_index = player_order.index(active_player) + 1
+
+        # rotate the list to start from the player after the active player
+        rotated_order = player_order[start_index:] + player_order[:start_index]
+        player_response = list()
+
+        for player in rotated_order:
+            if player == active_player:
+                return None
+
+            showed_a_card = self.__get_validated_input(
+                input_prompt=f"Did {player} show a card? (yes/no): ",
+                search_list=["yes", "no"],
+                transform=lambda x: x.lower(),
+                error_message="Invalid response.",
+            )
+            if showed_a_card:
+                card = self.__get_validated_input(
+                    input_prompt=f"Which card did {player} show? ",
+                    search_list=suggestion,
+                    transform=lambda x: x.lower(),
+                    error_message="Invalid card.",
+                )
+                player_response.append(player, card)
+                # nobody else reveals cards after one player does
+                break
+            else:
+                player_response.append(player, None)
+            return suggestion, player_response
+
     def roll(self, player):
         """
         Asks the user for the roll of the dice.
