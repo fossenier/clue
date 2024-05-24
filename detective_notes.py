@@ -236,5 +236,71 @@ class DetectiveNotes(object):
             return next(iter(cards))
 
     def __update(self):
-        # TODO
-        pass
+        """
+        Updates the detective notes based on the current information.
+        """
+        changes_made = True
+        while changes_made:
+            changes_made = (
+                self.__deduce_hand_limit()
+                or self.__deduce_known_card()
+                or self.__deduce_links()
+            )
+
+    def __deduce_hand_limit(self):
+        """
+        Deduces information when a player's hand is full.
+        They cannot have any of the remaining cards.
+        """
+        changes_made = False
+        for player in self.__players:
+            if self.__notes[player].count(True) == self.__hand_size:
+                for card in self.__cards:
+                    if self.__notes[player][card] is None:
+                        self.__notes[player][card] = False
+                        changes_made = True
+        return changes_made
+
+    def __deduce_known_card(self):
+        """
+        Deduces information when a card is known to be held.
+        No other player can have that card.
+        """
+        changes_made = False
+        for card in self.__cards:
+            if self.__card_status(card):
+                for player in self.__players:
+                    if self.__notes[player][card] is None:
+                        self.__notes[player][card] = False
+                        changes_made = True
+        return changes_made
+
+    def __deduce_links(self):
+        """
+        Deduces information based on card links.
+        If a player is guaranteed to have 1 of 3 cards, and 2 are known to be held
+        by other players, the player must have the third card.
+        """
+        changes_made = False
+        for player in self.__players:
+            if player in self.__links:
+                remaining_links = []
+                for suggestion in self.__links[player]:
+                    # cards known to be in OTHER players' hands
+                    known_cards = []
+                    # cards with unknown status
+                    unknown_cards = []
+                    for card in suggestion:
+                        if not self.__notes[player][card] and self.__card_status(card):
+                            known_cards.append(card)
+                        else:
+                            unknown_cards.append(card)
+                    # if the player has 1 unknown card and 2 known cards
+                    if len(unknown_cards) == 1 and len(known_cards) == 2:
+                        # resolve the link as the player holding the third card
+                        changes_made = True
+                        self.__notes[player][unknown_cards[0]] = True
+                    else:
+                        remaining_links.append(suggestion)
+                self.__links[player] = remaining_links
+        return changes_made

@@ -47,10 +47,18 @@ class ClueAlgorithm(object):
         """
         Runs the Clue game.
         """
-        while True:
-            self.__board.draw(self.__cpu_player)
-            self.__notes.draw()
-            self.__cpu_turn()
+        accused = False
+        while not accused:
+            for player in self.__player_order:
+                # update visuals
+                self.__board.draw(self.__cpu_player)
+                self.__notes.draw()
+
+                # run the turn
+                if player == self.__cpu_player:
+                    accused = self.__cpu_turn()
+                else:
+                    self.__human_turn(player)
 
     def save_game(self, file_name="game_state.pkl"):
         """
@@ -100,7 +108,7 @@ class ClueAlgorithm(object):
                 else:
                     self.__notes.denied_suggestion(player, suggestion)
 
-        return
+        return False
 
     def __human_turn(self, active_player):
         """
