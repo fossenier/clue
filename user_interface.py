@@ -15,8 +15,8 @@ class UI(object):
 
     def __get_validated_input(
         self,
-        input_prompt,
-        search_list,
+        input_prompt="No prompt provided.",
+        search_list=[],
         condition=lambda x: True,
         transform=lambda x: x,
         error_message="",
@@ -72,8 +72,8 @@ class UI(object):
         rtype str
         """
         return self.__get_validated_input(
-            "Enter the CPU player: ",
-            players,
+            input_prompt="Enter the CPU player: ",
+            search_list=players,
             transform=lambda x: [x.strip()],
             error_message="Player not found.",
         )[0]
@@ -93,8 +93,8 @@ class UI(object):
         rtype [str]
         """
         return self.__get_validated_input(
-            "Enter the order of the players, separated by commas: ",
-            suspects,
+            input_prompt="Enter the order of the players, separated by commas: ",
+            search_list=suspects,
             condition=lambda x: len(x) >= MIN_PLAYERS,
             transform=lambda x: [item.strip() for item in x.split(",")],
             error_message="Invalid game order.",
@@ -107,8 +107,8 @@ class UI(object):
         rtype {str}
         """
         return self.__get_validated_input(
-            f"Enter the hand of {player} ({HAND_SIZE[len(players)]} cards): ",
-            cards,
+            input_prompt=f"Enter the hand of {player} ({HAND_SIZE[len(players)]} cards): ",
+            search_list=cards,
             condition=lambda x: len(x) == HAND_SIZE[len(players)],
             transform=lambda x: {item.strip() for item in x.split(",")},
             error_message=f"Invalid hand for {player}. Must have {HAND_SIZE[len(players)]} cards.",
@@ -121,8 +121,8 @@ class UI(object):
         rtype int
         """
         return self.__get_validated_input(
-            f"Enter the roll for {player}: ",
-            list(range(2, 13)),
+            input_prompt=f"Enter the roll for {player}: ",
+            search_list=list(range(2, 13)),
             transform=lambda x: [int(x)],
             error_message="Invalid roll, must be 2-12.",
         )[0]
@@ -137,8 +137,49 @@ class UI(object):
         if input("Is there a side bar in the game? (y/n): ").lower() == "n":
             return None
         return self.__get_validated_input(
-            "Enter the side bar of the game: ",
-            cards,
+            input_prompt="Enter the side bar of the game: ",
+            search_list=cards,
             transform=lambda x: {item.strip() for item in x.split(",")},
             error_message="Invalid side bar.",
         )
+
+    def suggestion(self, cpu_player, suggestion, player_order):
+        """
+        Tells the user the suggestion made by the CPU player.
+        Then prompts for which players showed a card.
+
+        Returns a dictionary of players and their responses (a card or None).
+        rtype {str: str}
+        """
+        print(f"{cpu_player} made the suggestion: {suggestion}")
+
+        # find the index of the cpu_player
+        start_index = player_order.index(cpu_player) + 1
+
+        # rotate the list to start from the player after cpu_player
+        rotated_order = player_order[start_index:] + player_order[:start_index]
+        player_response = list()
+
+        for player in rotated_order:
+            if player == cpu_player:
+                return None
+
+            showed_a_card = self.__get_validated_input(
+                input_prompt=f"Did {player} show a card? (yes/no): ",
+                search_list=["yes", "no"],
+                transform=lambda x: x.lower(),
+                error_message="Invalid response.",
+            )
+            if showed_a_card:
+                card = self.__get_validated_input(
+                    input_prompt=f"Which card did {player} show? ",
+                    search_list=suggestion,
+                    transform=lambda x: x.lower(),
+                    error_message="Invalid card.",
+                )
+                player_response.append(player, card)
+                # nobody else reveals cards after one player does
+                break
+            else:
+                player_response.append(player, None)
+            return player_response

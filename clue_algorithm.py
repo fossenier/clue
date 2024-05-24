@@ -90,7 +90,17 @@ class ClueAlgorithm(object):
         # make suggestion
         room = self.__board.check_room(self.__cpu_player)
         if room:
-            suspect, weapon, room = self.__notes.make_suggestion(room)
+            suggestion = self.__notes.make_suggestion(room)
+            response_data = self.__ui.suggestion(
+                self.__cpu_player, self.__player_order, suggestion
+            )
+
+            # update detective notes
+            for player, response in response_data:
+                if response:
+                    self.__notes.reveal_card(player, response)
+                else:
+                    self.__notes.denied_suggestion(player, suggestion)
 
 
 def main():

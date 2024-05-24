@@ -30,6 +30,16 @@ class DetectiveNotes(object):
             player: {card: None for card in self.__cards} for player in self.__players
         }
 
+    def denied_suggestion(self, player, suggestion):
+        """
+        Marks when a player denies a suggestion made by the CPU player.
+
+        str player: player who denied the suggestion.
+        (str, str, str) suggestion: suggestion made by the CPU player.
+        """
+        for card in suggestion:
+            self.__notes[player][card] = False
+
     def draw(self, path=IMAGE_PATH):
         from PIL import Image, ImageDraw, ImageFont
 
