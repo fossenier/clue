@@ -6,9 +6,9 @@ It houses all helper functions.
 
 def search_within(search_item, search_list):
     """
-    This function sees if search_string is a part of any of the strings in search_list.
+    This function sees if search_item (str, int) is a part of any of the items in search_list.
 
-    rtype str or None
+    rtype str or int or None
     """
     if type(search_item) is type(""):
         for string in search_list:
