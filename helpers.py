@@ -14,8 +14,9 @@ def search_within(search_item, search_list):
     if not search_item or not search_list or search_list == []:
         return None
 
-    if type(search_item) != type(search_list[0]):
-        raise TypeError("search_item and search_list must be of the same type")
+    # TODO handle this case but account for sets and list input
+    # if type(search_item) != type(search_list[0]):
+    #     raise TypeError("search_item and search_list must be of the same type")
 
     if type(search_item) is type(""):
         for string in search_list:

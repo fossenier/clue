@@ -148,13 +148,16 @@ class Board(object):
 
         steps = 0
         for action, state in path:
+            # (room -> room and room -> passsage and passage -> room)
             if action == None:
                 continue
-            steps += 1
-            if steps == roll:
+            # an action was taken
+            else:
+                steps += 1
                 self.__suspect_locations[player] = state
-
-        print(f"{player} moved to {self.__suspect_locations[player]}")
+                # the player has run out of steps
+                if roll == steps:
+                    break
 
     def path_agent(self, player, roll):
         """
