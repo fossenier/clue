@@ -43,9 +43,6 @@ class Board(object):
         self.__populate_suspects_rooms()
         self.__populate_suspect_locations()
 
-        # TODO remove me
-        self.__suspect_locations["Scarlett"] = (6, 11)
-
     # public methods
     def cards(self):
         """
@@ -56,6 +53,16 @@ class Board(object):
         return self.__suspects.copy().union(
             self.__weapons.copy().union(self.__rooms.copy())
         )
+
+    def check_room(self, player):
+        """
+        Given a player, returns the room the player is in or None.
+
+        rtype str or None
+        """
+        player_location = self.__suspect_locations[player]
+        tile = self.__get_tile(*player_location)
+        return tile if tile in self.__rooms else None
 
     def draw(self, cpu_player, path=BOARD_IMG_PATH):
         from PIL import Image, ImageDraw, ImageFont

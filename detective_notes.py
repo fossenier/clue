@@ -107,6 +107,18 @@ class DetectiveNotes(object):
         else:
             return None
 
+    def make_suggestion(self, room):
+        """
+        Given the CPU player and the room they are in, returns an optimal suggestion.
+
+        rtype (str, str, str)
+        """
+        # get the best suggestion
+        best_suspect = self.__choose_card_suggestion(self.__suspects)
+        best_weapon = self.__choose_card_suggestion(self.__weapons)
+
+        return best_suspect, best_weapon, room
+
     def pick_room(self, rooms_turn_costs):
         """
         Given the possible moves the cpu can get to and the turns it'll take to get there,
@@ -181,7 +193,7 @@ class DetectiveNotes(object):
         """
         Takes in cards (suspects / weapons / rooms) and returns one which is
         the best (or simply acceptable) to suggest.
-        WARNING: If all cards are known, this will return None.
+        NOTE: If all cards are known, this will return an arbitrary item.
 
         rtype str
         """
@@ -201,7 +213,7 @@ class DetectiveNotes(object):
             return acceptable_cards[0]
         else:
             # all cards had data on them
-            return None
+            return next(iter(cards))
 
     def __update(self):
         # TODO

@@ -81,15 +81,16 @@ class ClueAlgorithm(object):
 
         # pick destination
         rooms_turn_costs = action_space[0]
-        print(rooms_turn_costs)
         desired_room = self.__notes.pick_room(rooms_turn_costs)
-        print(desired_room)
 
         # travel to destination
         self.__board.move_player(self.__cpu_player, desired_room, roll, path_data)
         self.__board.draw(self.__cpu_player)
 
-        self.__notes.reveal_card("Mustard", input())
+        # make suggestion
+        room = self.__board.check_room(self.__cpu_player)
+        if room:
+            suspect, weapon, room = self.__notes.make_suggestion(room)
 
 
 def main():
