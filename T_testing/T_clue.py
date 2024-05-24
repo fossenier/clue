@@ -25,6 +25,7 @@ for suite_key in SUITES:
             description,
             expected,
             parameters,
+            returns,
         ) = (
             test["assertion"],
             test["callable"],
@@ -32,13 +33,24 @@ for suite_key in SUITES:
             test["description"],
             test["expected"],
             test["parameters"],
+            test["returns"],
         )
         # run the corresponding class method / function with the given parameters
         if class_instance:
             test_callable = getattr(class_instance, CALLABLES[callable_key])
         else:
             test_callable = CALLABLES[callable_key]
-        actual = test_callable(*parameters)
+
+        actual = None
+        try:
+            actual = test_callable(*parameters)
+        except Exception as e:
+            actual = type(e)
+
+        # set actual to point to the input if we do not expect a return value
+        if not returns:
+            actual = parameters[0]
+
         if not ASSERTIONS[assertion_key](actual, *expected):
             # print an informative message
             print(

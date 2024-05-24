@@ -8,8 +8,15 @@ def search_within(search_item, search_list):
     """
     This function sees if search_item (str, int) is a part of any of the items in search_list.
 
+    Will return None if search_item or search_list do not exist.
     rtype str or int or None
     """
+    if not search_item or not search_list or search_list == []:
+        return None
+
+    if type(search_item) != type(search_list[0]):
+        raise TypeError("search_item and search_list must be of the same type")
+
     if type(search_item) is type(""):
         for string in search_list:
             if search_item.lower() in string.lower():
