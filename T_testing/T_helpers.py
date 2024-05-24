@@ -25,7 +25,7 @@ HELPERS_ASSERTIONS = {
 
 # setup test suites to run through
 HELPERS_SUITES = {
-    "c1_black_box": [
+    "c1": [
         {
             "assertion": "equality",
             "callable": "c1",

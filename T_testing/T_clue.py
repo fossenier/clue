@@ -5,13 +5,16 @@ Test suites for clue algorithm.
 from testing_utilities import merge_and_fix_keys
 
 from T_helpers import HELPERS_CALLABLES, HELPERS_ASSERTIONS, HELPERS_SUITES
+from T_board import BOARD_CALLABLES, BOARD_ASSERTIONS, BOARD_SUITES
 
 # setup constant to access the callables dynamically
-CALLABLES = merge_and_fix_keys(HELPERS_CALLABLES)
+CALLABLES = merge_and_fix_keys(HELPERS_CALLABLES, BOARD_CALLABLES)
 # setup test suites to run through
-SUITES = merge_and_fix_keys(HELPERS_SUITES)
+SUITES = merge_and_fix_keys(HELPERS_SUITES, BOARD_SUITES)
 
-ASSERTIONS = HELPERS_ASSERTIONS  # remember use or | to combine the assertions
+ASSERTIONS = (
+    HELPERS_ASSERTIONS | BOARD_ASSERTIONS
+)  # remember use or | to combine the assertions
 
 
 # run each suite
