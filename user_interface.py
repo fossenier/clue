@@ -194,20 +194,21 @@ class UI(object):
             error_message="Invalid roll, must be 2-12.",
         )[0]
 
-    def sidebar(self, cards):
-        # TODO make it so that cards in the sidebar cannot be in the cpu hand
+    def sidebar(self, cards, cpu_hand, sidebar_size):
         """
         Asks the user for the side bar of the game.
 
         rtype {str}
         """
-        if input("Is there a side bar in the game? (y/n): ").lower() == "n":
+        if sidebar_size == 0:
             return None
+        # the cards must be in `cards` and not in `cpu_hand` and must be `len(sidebar_size)`
         return self.__get_validated_input(
-            input_prompt="Enter the side bar of the game: ",
+            input_prompt="Enter the cards in the sidebar: ",
             search_list=cards,
+            condition=lambda x: len(x) == sidebar_size,
             transform=lambda x: {item.strip() for item in x.split(",")},
-            error_message="Invalid side bar.",
+            error_message=f"Invalid side bar. Must be {sidebar_size} cards. And not in the CPU hand.",
         )
 
     def suggestion(self, cpu_player, suggestion, player_order):

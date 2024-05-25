@@ -24,14 +24,6 @@ class ClueAlgorithm(object):
         self.__ui = UI(self.__USER_COMMANDS)
         # get player order
         self.__player_order = self.__ui.game_order(self.__board.suspects())
-        # initialize detective notes object
-        self.__notes = DetectiveNotes(
-            self.__board.suspects(),
-            self.__board.weapons(),
-            self.__board.rooms(),
-            self.__player_order,
-            self.__ui.sidebar(self.__board.cards()),
-        )
 
         # get cpu player
         self.__cpu_player = self.__ui.cpu_player(self.__player_order)
@@ -39,6 +31,17 @@ class ClueAlgorithm(object):
         self.__hand = self.__ui.hand(
             self.__cpu_player, self.__player_order, self.__board.cards()
         )
+        sidebar_size = len(self.__board.cards()) % len(self.__player_order)
+
+        # initialize detective notes object
+        self.__notes = DetectiveNotes(
+            self.__board.suspects(),
+            self.__board.weapons(),
+            self.__board.rooms(),
+            self.__player_order,
+            self.__ui.sidebar(self.__board.cards(), self.__hand, sidebar_size),
+        )
+
         # populate detective notes with hand
         for card in self.__hand:
             self.__notes.reveal_card(self.__cpu_player, card)

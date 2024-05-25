@@ -30,16 +30,23 @@ class DetectiveNotes(object):
         self.__notes = {
             player: {card: None for card in self.__cards} for player in self.__players
         }
+        # populate the sidebar with the initial data
+        self.__notes["Sidebar"] = {
+            card: card in self.__sidebar for card in self.__cards
+        }
 
     def denied_suggestion(self, player, suggestion):
         """
         Marks when a player denies a suggestion made by the CPU player.
+        NOTE: modifies the notes dictionary and thus calls __update.
 
         str player: player who denied the suggestion.
         (str, str, str) suggestion: suggestion made by the CPU player.
         """
         for card in suggestion:
             self.__notes[player][card] = False
+
+        self.__update()
 
     def draw(self, path=IMAGE_PATH):
         from PIL import Image, ImageDraw, ImageFont
@@ -168,11 +175,14 @@ class DetectiveNotes(object):
     def reveal_card(self, player, card):
         """
         Marks when a player's card is revealed.
+        NOTE: modifies the notes dictionary and thus calls __update.
 
         str player: player who revealed the card.
         str card: card that was revealed.
         """
         self.__notes[player][card] = True
+
+        self.__update()
 
     def __find_all_false(self, cards):
         """
@@ -254,7 +264,11 @@ class DetectiveNotes(object):
         """
         changes_made = False
         for player in self.__players:
-            if self.__notes[player].count(True) == self.__hand_size:
+            # count how many cards are True for the player
+            true_count = sum(
+                1 for card in self.__cards if self.__notes[player][card] is True
+            )
+            if true_count == self.__hand_size:
                 for card in self.__cards:
                     if self.__notes[player][card] is None:
                         self.__notes[player][card] = False
