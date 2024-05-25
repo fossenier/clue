@@ -51,9 +51,7 @@ class UI(object):
 
         Returns a mapping between players and either the card they showed or None.
         """
-        print(f"{cpu_player} made the suggestion: {suggestion}")
-
-        player_response = suggestion(cpu_player, player_order, suggestion)
+        _, player_response = self.__suggestion(cpu_player, player_order, suggestion)
         player_card = dict()
 
         for player in player_response:
