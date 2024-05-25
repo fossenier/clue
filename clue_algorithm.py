@@ -129,12 +129,13 @@ class ClueAlgorithm(object):
             self.__board.weapons(),
             self.__board.rooms(),
         )
-        for player in player_response:
-            response = player_response[player]
-            if response:
-                self.__notes.make_link(player, suggestion)
-            else:
-                self.__notes.denied_suggestion(player, suggestion)
+        if player_response:
+            for player in player_response:
+                response = player_response[player]
+                if response:
+                    self.__notes.make_link(player, suggestion)
+                else:
+                    self.__notes.denied_suggestion(player, suggestion)
 
         return
 

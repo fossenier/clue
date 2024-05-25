@@ -5,7 +5,7 @@ It handles all communication between the program and the user.
 
 from config import HAND_SIZE, MIN_PLAYERS, Suggestion
 from helpers import search_within
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 
 class UI(object):
@@ -127,13 +127,12 @@ class UI(object):
             self.__get_validated_input(
                 input_prompt=f"Does {human_player} make a suggestion? (yes/no): ",
                 search_list=["yes", "no"],
-                condition=lambda x: len(x) == 1,
                 transform=lambda x: x.lower(),
                 error_message="Invalid response.",
             )[0]
             == "no"
         ):
-            return None
+            return None, None
 
         print("Choose what was suggested.")
 
@@ -143,7 +142,6 @@ class UI(object):
             suggestion_cards[i] = self.__get_validated_input(
                 input_prompt=f"{card_type}: ",
                 search_list=card_type,
-                condition=lambda x: len(x) == 1,
                 transform=lambda x: x.lower(),
                 error_message=f"Invalid input, must select from the list.",
             )[0]
@@ -206,7 +204,10 @@ class UI(object):
         valid_input = None
         while not valid_input:
             user_input = self.command_enabled_input(input_prompt)
+            # a single string should be made a list (so that the characters are not interated on)
             transformed_input = transform(user_input)
+            if type(transformed_input) is str:
+                transformed_input = list((transformed_input,))
             # turn the input into a set to remove duplicates
             if preserve_order:
                 validated_input = [
@@ -233,7 +234,7 @@ class UI(object):
         originating_player: str,
         player_order: List[str],
         suggestion: Suggestion,
-    ) -> List[Suggestion, Dict[str, bool]]:
+    ) -> Tuple[Suggestion, Dict[str, bool]]:
         """
         Prompts the user for the responses to a suggestion being made as it is passed
         around the turn order.
@@ -270,5 +271,7 @@ class UI(object):
             # the player had a card to show
             else:
                 player_response[player] = True
+                # nobody is asked after somebody reveals
+                break
 
         return suggestion, player_response
