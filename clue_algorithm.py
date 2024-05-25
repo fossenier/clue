@@ -108,7 +108,7 @@ class ClueAlgorithm(object):
             player_response = self.__ui.cpu_suggestion(
                 self.__cpu_player, self.__player_order, suggestion
             )
-            
+
             for player in player_response:
                 response = player_response[player]
                 if response:
@@ -122,19 +122,19 @@ class ClueAlgorithm(object):
         """
         Handles the human player's turn.
         """
-        suspects = self.__board.suspects()
-        weapons = self.__board.weapons()
-        rooms = self.__board.rooms()
-        response = self.__ui.human_suggestion(
-            active_player, self.__player_order, suspects, weapons, rooms
+        suggestion, player_response = self.__ui.human_suggestion(
+            active_player,
+            self.__player_order,
+            self.__board.suspects(),
+            self.__board.weapons(),
+            self.__board.rooms(),
         )
-        if response:
-            for suggestion, player_response in response:
-                player, response = player_response
-                if response:
-                    self.__notes.make_link(player, suggestion)
-                else:
-                    self.__notes.denied_suggestion(player, suggestion)
+        for player in player_response:
+            response = player_response[player]
+            if response:
+                self.__notes.make_link(player, suggestion)
+            else:
+                self.__notes.denied_suggestion(player, suggestion)
 
         return
 

@@ -12,6 +12,7 @@ from config import (
     TILE_COLOURS,
     Suggestion,
 )
+from typing import List
 
 
 class DetectiveNotes(object):
@@ -36,15 +37,12 @@ class DetectiveNotes(object):
             card: card in self.__sidebar for card in self.__cards
         }
 
-    def denied_suggestion(self, player, suggestion):
+    def denied_suggestion(self, player: str, suggestion: Suggestion) -> None:
         """
         Marks when a player denies a suggestion made by the CPU player.
         NOTE: modifies the notes dictionary and thus calls __update.
-
-        str player: player who denied the suggestion.
-        (str, str, str) suggestion: suggestion made by the CPU player.
         """
-        for card in suggestion:
+        for card in suggestion.cards:
             self.__notes[player][card] = False
 
         self.__update()
@@ -126,7 +124,7 @@ class DetectiveNotes(object):
         else:
             return None
 
-    def make_link(self, player, suggestion):
+    def make_link(self, player: str, suggestion: Suggestion) -> None:
         """
         Marks when a player has at least one card in a suggestion.
         """
@@ -142,8 +140,8 @@ class DetectiveNotes(object):
         rtype Suggestion
         """
         # get the best suggestion
-        best_suspect = self.__choose_card_suggestion(self.__suspects)
-        best_weapon = self.__choose_card_suggestion(self.__weapons)
+        best_suspect = self.__select_for_suggestion(self.__suspects)
+        best_weapon = self.__select_for_suggestion(self.__weapons)
 
         return Suggestion(best_suspect, best_weapon, room)
 
@@ -166,12 +164,9 @@ class DetectiveNotes(object):
 
         # select the best room
         for turn_layer in sorted(soonest_reachable.keys()):
-            if self.__choose_card_suggestion(soonest_reachable[turn_layer]) is not None:
-                suggestion = self.__choose_card_suggestion(
-                    soonest_reachable[turn_layer]
-                )
-                if suggestion:
-                    return suggestion
+            optimal_room = self.__select_for_suggestion(soonest_reachable[turn_layer])
+            if optimal_room:
+                return optimal_room
 
     def reveal_card(self, player, card):
         """
@@ -220,9 +215,10 @@ class DetectiveNotes(object):
 
         return False if all_false else None
 
-    def __choose_card_suggestion(self, cards):
+    def __select_for_suggestion(self, cards: List[str]) -> str:
+        # TODO suggestion
         """
-        Takes in cards (suspects / weapons / rooms) and returns one which is
+        Takes in cards (suspects OR weapons OR rooms) and returns one which is
         the best (or simply acceptable) to suggest.
         NOTE: If all cards are known, this will return an arbitrary item.
 
@@ -305,7 +301,7 @@ class DetectiveNotes(object):
                     known_cards = []
                     # cards with unknown status
                     unknown_cards = []
-                    for card in suggestion:
+                    for card in suggestion.cards:
                         if not self.__notes[player][card] and self.__card_status(card):
                             known_cards.append(card)
                         else:

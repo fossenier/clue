@@ -233,12 +233,13 @@ class UI(object):
         originating_player: str,
         player_order: List[str],
         suggestion: Suggestion,
-    ) -> Dict[str, bool]:
+    ) -> List[Suggestion, Dict[str, bool]]:
         """
         Prompts the user for the responses to a suggestion being made as it is passed
         around the turn order.
 
-        Returns a mapping between players and their responses (True / False).
+        Returns a tuple containing the suggestion and a mapping between players
+        and their responses (True / False).
         """
         print(f"{originating_player} made the suggestion: {suggestion}")
 
@@ -270,4 +271,4 @@ class UI(object):
             else:
                 player_response[player] = True
 
-        return player_response
+        return suggestion, player_response
