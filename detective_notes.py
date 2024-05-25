@@ -10,6 +10,7 @@ from config import (
     IMAGE_PATH,
     HEADER_SIZE,
     TILE_COLOURS,
+    Suggestion,
 )
 
 
@@ -134,17 +135,17 @@ class DetectiveNotes(object):
         except KeyError:
             self.__links[player] = [suggestion]
 
-    def make_suggestion(self, room):
+    def make_suggestion(self, room: str) -> Suggestion:
         """
         Given the CPU player and the room they are in, returns an optimal suggestion.
 
-        rtype (str, str, str)
+        rtype Suggestion
         """
         # get the best suggestion
         best_suspect = self.__choose_card_suggestion(self.__suspects)
         best_weapon = self.__choose_card_suggestion(self.__weapons)
 
-        return best_suspect, best_weapon, room
+        return Suggestion(best_suspect, best_weapon, room)
 
     def pick_room(self, rooms_turn_costs):
         """
@@ -210,7 +211,7 @@ class DetectiveNotes(object):
         rtype bool or None
         """
         all_false = True
-        for player in self.__players:
+        for player in self.__players + ["Sidebar"]:
             # if the card is unknown, we know it's not false for all players
             if self.__notes[player][card] is None:
                 all_false = False
@@ -263,7 +264,7 @@ class DetectiveNotes(object):
         They cannot have any of the remaining cards.
         """
         changes_made = False
-        for player in self.__players:
+        for player in self.__players + ["Sidebar"]:
             # count how many cards are True for the player
             true_count = sum(
                 1 for card in self.__cards if self.__notes[player][card] is True
@@ -283,7 +284,7 @@ class DetectiveNotes(object):
         changes_made = False
         for card in self.__cards:
             if self.__card_status(card):
-                for player in self.__players:
+                for player in self.__players + ["Sidebar"]:
                     if self.__notes[player][card] is None:
                         self.__notes[player][card] = False
                         changes_made = True

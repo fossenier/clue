@@ -6,7 +6,7 @@ It directs the player like a puppet to play the game.
 import pickle
 import sys
 
-from config import BOARD_PATH
+from config import BOARD_PATH, MURDERER_CARDS
 
 from board import Board
 from detective_notes import DetectiveNotes
@@ -31,7 +31,9 @@ class ClueAlgorithm(object):
         self.__hand = self.__ui.hand(
             self.__cpu_player, self.__player_order, self.__board.cards()
         )
-        sidebar_size = len(self.__board.cards()) % len(self.__player_order)
+        sidebar_size = (len(self.__board.cards()) - MURDERER_CARDS) % len(
+            self.__player_order
+        )
 
         # initialize detective notes object
         self.__notes = DetectiveNotes(
@@ -103,9 +105,12 @@ class ClueAlgorithm(object):
         if room:
             suggestion = self.__notes.make_suggestion(room)
             # update detective notes
-            for player, response in self.__ui.suggestion(
+            player_response = self.__ui.cpu_suggestion(
                 self.__cpu_player, self.__player_order, suggestion
-            ):
+            )
+            
+            for player in player_response:
+                response = player_response[player]
                 if response:
                     self.__notes.reveal_card(player, response)
                 else:
@@ -120,14 +125,16 @@ class ClueAlgorithm(object):
         suspects = self.__board.suspects()
         weapons = self.__board.weapons()
         rooms = self.__board.rooms()
-        for suggestion, player_response in self.__ui.human_suggestion(
+        response = self.__ui.human_suggestion(
             active_player, self.__player_order, suspects, weapons, rooms
-        ):
-            player, response = player_response
-            if response:
-                self.__notes.make_link(player, suggestion)
-            else:
-                self.__notes.denied_suggestion(player, suggestion)
+        )
+        if response:
+            for suggestion, player_response in response:
+                player, response = player_response
+                if response:
+                    self.__notes.make_link(player, suggestion)
+                else:
+                    self.__notes.denied_suggestion(player, suggestion)
 
         return
 

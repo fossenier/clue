@@ -5,6 +5,7 @@ It houses all magic numbers and config values.
 
 # multiple
 HAND_SIZE = {3: 6, 4: 4, 5: 3, 6: 3}
+MURDERER_CARDS = 3
 
 # board.py
 BOARD_IMG_PATH = "board.png"
@@ -37,3 +38,18 @@ TILE_COLOURS = {
 
 # user_interface.py
 MIN_PLAYERS = 3
+
+
+class Suggestion(object):
+    def __init__(self, suspect, weapon, room) -> None:
+        """
+        Stores a player suggestion.
+        """
+        self.suspect = suspect
+        self.weapon = weapon
+        self.room = room
+
+        self.cards = [suspect, weapon, room]
+
+    def __str__(self) -> str:
+        return str(self.cards)
