@@ -1,6 +1,6 @@
 """
 This is the inferface for a third slice of Clue.
-It handles all communication between the program and the user.
+It handles all communication between the program and the user!
 """
 
 from config import HAND_SIZE, MIN_PLAYERS, Suggestion
