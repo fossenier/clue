@@ -33,9 +33,10 @@ class DetectiveNotes(object):
             player: {card: None for card in self.__cards} for player in self.__players
         }
         # populate the sidebar with the initial data
-        self.__notes["Sidebar"] = {
-            card: card in self.__sidebar for card in self.__cards
-        }
+        # self.__notes["Sidebar"] = {
+        #     card: card in self.__sidebar for card in self.__cards
+        # }
+        self.__notes["Sidebar"] = {None for _ in self.__cards}
 
     def denied_suggestion(self, player: str, suggestion: Suggestion) -> None:
         """
@@ -206,7 +207,7 @@ class DetectiveNotes(object):
         rtype bool or None
         """
         all_false = True
-        for player in self.__players + ["Sidebar"]:
+        for player in self.__players:
             # if the card is unknown, we know it's not false for all players
             if self.__notes[player][card] is None:
                 all_false = False
@@ -260,7 +261,7 @@ class DetectiveNotes(object):
         They cannot have any of the remaining cards.
         """
         changes_made = False
-        for player in self.__players + ["Sidebar"]:
+        for player in self.__players:
             # count how many cards are True for the player
             true_count = sum(
                 1 for card in self.__cards if self.__notes[player][card] is True
@@ -280,7 +281,7 @@ class DetectiveNotes(object):
         changes_made = False
         for card in self.__cards:
             if self.__card_status(card):
-                for player in self.__players + ["Sidebar"]:
+                for player in self.__players:
                     if self.__notes[player][card] is None:
                         self.__notes[player][card] = False
                         changes_made = True
