@@ -1,10 +1,12 @@
-Candlestick,Knife,Lead Pipe,Revolver,Rope,Wrench
+rooms,Ballroom,Billiard,Conservatory,Dining,Hall,Kitchen,Library,Lounge,Study
+suspects,Green,Mustard,Peacock,Plum,Scarlett,White
+weapons,Candlestick,Knife,Lead Pipe,Revolver,Rope,Wrench
 x,x,x,x,x,x,x,Mustard,x,x,x,x,x,x,x,x,x, ,x,x,x,x,x,x,x
 x,x,x,x,x,x, , , ,x,x,x,x,x,x,x, , ,x,x,x,x,x,x,x
 x,x,x,x,x,x, , , ,x,x,x,x,x,x,x, , ,x,x,x,x,x,x,x
 x,x,x,x,x,x, , , ,x,x,x,x,x,x,x, , ,Passage,Study,x,x,x,x,x
 x,x,x,x,x,x, , , ,x,x,x,x,x,x,x, ,Door,Kitchen,x,x,x,x,x,x
-x,x,x,x,Conserve,Passage, , , ,x,x,x,x,x,x, , , ,x,x,x,x,x,x,x
+x,x,x,x,Conservatory,Passage, , , ,x,x,x,x,x,x, , , ,x,x,x,x,x,x,x
 x,x,x,x,x,Lounge,Door, ,Door,Dining,x,x,x,x,x, , , , , , , , ,x,x
 Scarlett, , , , , , , , ,x,x,x,Dining,x,x, , , , ,Door, , , , ,x
 x, , , , , , , , , , , ,Door, , , , ,x,x,Ballroom,x,x,x, ,x
@@ -18,7 +20,7 @@ x, , , ,Door, , , , , , , , , , , , ,x,x,Ballroom,x,x,x, ,x
  , , , , , , , ,Door, , , , , , , , , , ,Door, , , , ,x
 x,x,x,Study,Door, , ,x,Library,x, , , , , ,Door, , , , , , , ,x,x
 x,x,Kitchen,Passage, , ,x,x,x,x,x, ,x,x,x,Billiard,x, , ,Door,x,x,x,x,x
-x,x,x,x, , ,x,x,x,x,x, ,x,x,x,x,x, , ,Conserve,x,x,x,x,x
+x,x,x,x, , ,x,x,x,x,x, ,x,x,x,x,x, , ,Conservatory,x,x,x,x,x
 x,x,x,x, , ,x,x,x,x,Library,Door,x,x,x,x,x, , ,Passage,Lounge,x,x,x,x
 x,x,x,x, , ,x,x,x,x,x, ,x,x,x,x,x, , ,x,x,x,x,x,x
 x,x,x,x, , ,x,x,x,x,x,Door,Billiard,x,x,x,x, , ,x,x,x,x,x,x

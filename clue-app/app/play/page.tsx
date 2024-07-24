@@ -1,51 +1,43 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import useSWR from 'swr';
 
 type BoardData = string[][];
 
+interface ApiResponse {
+  rooms: string[];
+  suspects: string[];
+  weapons: string[];
+  board: BoardData;
+}
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
 export default function Play() {
-  const [boardData, setBoardData] = useState<BoardData>([]);
+  const { data, error } = useSWR<ApiResponse>(
+    "http://127.0.0.1:5000/api/board",
+    fetcher
+  );
 
-  useEffect(() => {
-    const fetchBoardData = async () => {
-      try {
-        const response = await fetch("http://127.0.0.1:5000/api/board");
-        const data: BoardData = await response.json();
-        setBoardData(data);
-      } catch (error) {
-        console.error("Error fetching board data:", error);
-      }
-    };
+  if (error) return <div>Error loading board data</div>;
+  if (!data) return <div>Loading...</div>;
 
-    fetchBoardData();
-  }, []);
+  const { board } = data;
 
   return (
     <div>
       <h1>Board Data</h1>
-      {boardData.length > 0 ? (
-        <table>
-          <thead>
-            <tr>
-              {boardData[0].map((header, index) => (
-                <th key={index}>{header}</th>
+      <table>
+        <tbody>
+          {board.map((row, rowIndex) => (
+            <tr key={rowIndex}>
+              {row.map((cell, cellIndex) => (
+                <td key={cellIndex}>{cell}</td>
               ))}
             </tr>
-          </thead>
-          <tbody>
-            {boardData.slice(1).map((row, rowIndex) => (
-              <tr key={rowIndex}>
-                {row.map((cell, cellIndex) => (
-                  <td key={cellIndex}>{cell}</td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      ) : (
-        <p>Loading...</p>
-      )}
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
