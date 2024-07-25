@@ -1,9 +1,9 @@
 "use client";
 
-import "./styles.play.sass";
+import './styles.play.sass';
 
-import React from "react";
-import useSWR from "swr";
+import React from 'react';
+import useSWR from 'swr';
 
 type BoardData = string[][];
 
@@ -22,56 +22,46 @@ export default function Play() {
     fetcher
   );
 
-  if (error) return <div>Error loading board data</div>;
-  if (!data) return <div>Loading...</div>;
+  if (error)
+    return <div className="text-red-500">Error loading board data</div>;
+  if (!data) return <div className="text-gray-500">Loading...</div>;
 
   const { board } = data;
 
-  const getMaxLength = (data: BoardData) => {
-    let maxLength = 0;
-    data.forEach((row) => {
-      row.forEach((cell) => {
-        if (cell.length > maxLength) {
-          maxLength = cell.length;
-        }
-      });
-    });
-    return maxLength;
-  };
-
   const getBackgroundClass = (cell: string) => {
-    if (cell === "x") return "wall"; // Red for walls
-    if (cell === " ") return "hallway"; // Light gray for hallways
-    // Assuming rooms, suspects, and weapons are predefined lists
-    if (data.rooms.includes(cell)) return "room"; // Light blue for rooms
-    if (data.suspects.includes(cell)) return "suspect"; // Green for suspects
-    if (data.weapons.includes(cell)) return "weapon"; // Orange for weapons
-    return "default"; // Default white background
+    if (cell === "Passage") return "wall";
+    if (cell === "x") return "wall";
+    if (cell === " ") return "hallway";
+    if (data.rooms.includes(cell)) return "room";
+    if (data.suspects.includes(cell)) return "suspect";
+    if (data.weapons.includes(cell)) return "weapon";
+    return "default";
   };
 
-  const maxLength = getMaxLength(board);
+  const numRows = board.length;
+  const numCols = board[0].length;
 
   return (
-    <div className="board-container">
-      <h1>Board Data</h1>
-      <div>
-        {board.map((row, rowIndex) => (
-          <div key={rowIndex} className="board-row">
-            {row.map((cell, cellIndex) => (
-              <div
-                key={cellIndex}
-                className={`board-cell ${getBackgroundClass(cell)}`}
-                style={{
-                  width: `${maxLength + 2}ch`,
-                  height: "3em",
-                  lineHeight: "3em",
-                }}
-              >
-                {cell}
-              </div>
-            ))}
-          </div>
-        ))}
+    <div className="flex flex-col h-screen w-screen items-center justify-center p-8">
+      <div
+        className={`grid gap-1 w-full h-full`}
+        style={{
+          gridTemplateRows: `repeat(${numRows}, 1fr)`,
+          gridTemplateColumns: `repeat(${numCols}, 1fr)`,
+        }}
+      >
+        {board.flatMap((row, rowIndex) =>
+          row.map((cell, cellIndex) => (
+            <div
+              key={`${rowIndex}-${cellIndex}`}
+              className={`board-cell ${getBackgroundClass(
+                cell
+              )} flex items-center justify-center text-center overflow-hidden`}
+            >
+              <span className="text-xs xl:text-base truncate">{cell}</span>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );
