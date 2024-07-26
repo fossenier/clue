@@ -1,6 +1,6 @@
-rooms,Ballroom,Billiard,Conserv,Dining,Hall,Kitchen,Library,Lounge,Study
-suspects,Green,Mustard,Peacock,Plum,Scarlett,White
-weapons,Candlestick,Knife,Lead Pipe,Revolver,Rope,Wrench
+Ballroom,Billiard,Conserv,Dining,Hall,Kitchen,Library,Lounge,Study
+Green,Mustard,Peacock,Plum,Scarlett,White
+Candlestick,Knife,Lead Pipe,Revolver,Rope,Wrench
 x,x,x,x,x,x,x,Mustard,x,x,x,x,x,x,x,x,x, ,x,x,x,x,x,x,x
 x,x,x,x,x,x, , , ,x,x,x,x,x,x,x, , ,x,x,x,x,x,x,x
 x,x,x,x,x,x, , , ,x,x,x,x,x,x,x, , ,x,x,x,x,x,x,x

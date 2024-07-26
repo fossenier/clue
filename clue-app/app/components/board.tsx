@@ -7,9 +7,16 @@ interface BoardProps {
   rooms: string[];
   suspects: string[];
   weapons: string[];
+  onClick: (x: number, y: number) => void;
 }
 
-const Board: React.FC<BoardProps> = ({ board, rooms, suspects, weapons }) => {
+const Board: React.FC<BoardProps> = ({
+  board,
+  rooms,
+  suspects,
+  weapons,
+  onClick,
+}) => {
   const getBackgroundClass = (cell: string) => {
     if (cell === "Passage") return "bg-red-500";
     if (cell === "x") return "bg-red-500";
@@ -38,6 +45,7 @@ const Board: React.FC<BoardProps> = ({ board, rooms, suspects, weapons }) => {
             className={`${getBackgroundClass(
               cell
             )} flex items-center justify-center text-center overflow-hidden`}
+            onClick={() => onClick(cellIndex, rowIndex)}
           >
             <span className="text-xs xl:text-base">{cell}</span>
           </div>

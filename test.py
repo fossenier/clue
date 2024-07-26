@@ -1,3 +1,5 @@
-import numpy as np
+import pandas as pd
 
-print(np.__version__)
+df = pd.read_csv("board.csv", skiprows=3, header=None)
+
+print(df)
