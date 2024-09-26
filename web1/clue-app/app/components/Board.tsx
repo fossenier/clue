@@ -1,6 +1,6 @@
-import React from "react";
+import React from 'react';
 
-import { BoardData } from "@constants/index";
+import { BoardData } from '@constants/index';
 
 interface BoardProps {
   board: BoardData;
