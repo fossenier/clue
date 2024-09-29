@@ -21,6 +21,12 @@ const config: Config = {
         // Create a 25 column grid
         '25': 'repeat(25, minmax(0, 1fr))',
       },
+      height: {
+        '1/24': '4.166666%',
+      },
+      width: {
+        '1/25': '4%',
+      },
     },
   },
   plugins: [],
