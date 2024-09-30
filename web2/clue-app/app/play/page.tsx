@@ -1,5 +1,3 @@
-// app/play/page.tsx
-
 "use client";
 import React from "react";
 
@@ -11,8 +9,13 @@ export default function Play() {
   };
 
   return (
-    <div>
-      <Board onTileClick={updateBoardData} />
+    <div className="flex h-dvh w-dvw">
+      <div className="w-1/6 bg-white">
+        <p>ayy</p>
+      </div>
+      <div className="w-5/6">
+        <Board onTileClick={updateBoardData} />
+      </div>
     </div>
   );
 }
