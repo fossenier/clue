@@ -2,6 +2,7 @@
 import React from "react";
 
 import Board from "./Board";
+import Panel from "./Panel";
 
 export default function Play() {
   const updateBoardData = (idx: number) => {
@@ -10,8 +11,8 @@ export default function Play() {
 
   return (
     <div className="flex h-dvh w-dvw">
-      <div className="w-1/6 bg-white">
-        <p>ayy</p>
+      <div className="w-1/6">
+        <Panel />
       </div>
       <div className="w-5/6">
         <Board onTileClick={updateBoardData} />
