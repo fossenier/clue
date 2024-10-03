@@ -1,24 +1,17 @@
 import React from "react";
 
-import { Box, Typography } from "@mui/material";
-
-const style = {
-  position: "absolute" as "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: 400,
-  bgcolor: "background.paper",
-  border: "2px solid #000",
-  boxShadow: 24,
-  p: 4,
-};
-
 const Cards: React.FC = () => {
   return (
-    <Box sx={style}>
-      <p className="text-black">Title baby</p>
-    </Box>
+    <div className="w-full h-full p-2 flex flex-col items-center">
+      <div className="w-5/6 bg-indigo-300 rounded-md p-2 flex justify-center">
+        <p>My Cards</p>
+      </div>
+      <div className="flex flex-row justify-center">
+        <p>One</p>
+        <p>Two</p>
+        <p>Three</p>
+      </div>
+    </div>
   );
 };
 
