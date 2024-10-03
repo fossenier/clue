@@ -10,7 +10,6 @@ const Panel: React.FC = () => {
     <div className="h-full w-full bg-white">
       <Stack spacing={2} direction={"column"}>
         <Cards></Cards>
-        <Button variant="contained">My Cards</Button>
         <Button variant="contained">Take a Roll</Button>
         <Button variant="contained">Suggest</Button>
         <Button variant="contained">Accuse</Button>
