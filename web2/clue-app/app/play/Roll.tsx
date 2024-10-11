@@ -5,9 +5,11 @@ import { SUSPECTS } from "@constants/index";
 import { Button } from "@mui/material";
 
 const Roll: React.FC = () => {
+  // Store the user's rolls this turn, and how much movement they have left
   const [rollResult, setRollResult] = useState<number | null>(null);
   const [movesLeft, setMovesLeft] = useState<number | null>(null);
 
+  // Roll the user's dice for the turn
   const rollDice = () => {
     const dice1 = Math.floor(Math.random() * 6) + 1;
     const dice2 = Math.floor(Math.random() * 6) + 1;
