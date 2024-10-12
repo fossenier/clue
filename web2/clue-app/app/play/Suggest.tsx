@@ -6,9 +6,9 @@ import { Button, FormControl, InputLabel, MenuItem } from "@mui/material";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 
 const Suggest: React.FC = () => {
-  const [room, setRoom] = React.useState<string | undefined>(undefined);
-  const [suspect, setSuspect] = React.useState<string | undefined>(undefined);
-  const [weapon, setWeapon] = React.useState<string | undefined>(undefined);
+  const [room, setRoom] = React.useState<string>("");
+  const [suspect, setSuspect] = React.useState<string>("");
+  const [weapon, setWeapon] = React.useState<string>("");
 
   const [incomplete, setIncomplete] = React.useState<boolean>(false);
 

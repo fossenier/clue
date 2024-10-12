@@ -14,7 +14,6 @@ const Panel: React.FC = () => {
         <Cards></Cards>
         <Roll></Roll>
         <Suggest></Suggest>
-        <Button variant="contained">Accuse</Button>
       </Stack>
     </div>
   );
