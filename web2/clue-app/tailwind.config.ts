@@ -27,6 +27,23 @@ const config: Config = {
       width: {
         '1/25': '4%',
       },
+      colors: {
+        'periwinkle': {
+          DEFAULT: '#babeee',
+        },
+        'lavender': {
+          DEFAULT: '#7573b6',
+        },
+        'turquoise': {
+          DEFAULT: '#70acb4',
+        },
+        'aqua': {
+          DEFAULT: '#90d2c3',
+        },
+        'chartreuse': {
+          DEFAULT: '#ecf4be',
+        },
+      },
     },
   },
   plugins: [],
