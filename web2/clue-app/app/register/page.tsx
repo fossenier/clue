@@ -26,6 +26,7 @@ export default function Register() {
     }
   };
 
+  // test
   const isPasswordValid = (): boolean => {
     if (password.length >= 8) {
       setPasswordError("");
