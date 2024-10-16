@@ -1,12 +1,13 @@
 "use client";
-import { compare, genSalt, genSaltSync, hash, hashSync } from "bcrypt-ts";
-import { useMutation } from "convex/react";
-import { ConvexError } from "convex/values";
-import Error from "next/error";
-import React, { useState } from "react";
+import { compare, genSalt, genSaltSync, hash, hashSync } from 'bcrypt-ts';
+import { useMutation } from 'convex/react';
+import { ConvexError } from 'convex/values';
+import { monthsShort } from 'moment';
+import Error from 'next/error';
+import React, { useState } from 'react';
 
-import { api } from "@/convex/_generated/api";
-import { Button, TextField } from "@mui/material";
+import { api } from '@/convex/_generated/api';
+import { Button, TextField } from '@mui/material';
 
 export default function Register() {
   const [username, setUsername] = useState("");
@@ -14,7 +15,7 @@ export default function Register() {
 
   const [usernameError, setUsernameError] = useState("");
   const [passwordError, setPasswordError] = useState("");
-  const [buttonError, setButtonError] = useState<boolean>(false);
+  const [buttonError, setButtonError] = useState("");
 
   const isUsernameValid = (): boolean => {
     if (username.length >= 6) {
@@ -26,7 +27,6 @@ export default function Register() {
     }
   };
 
-  // test
   const isPasswordValid = (): boolean => {
     if (password.length >= 8) {
       setPasswordError("");
@@ -43,14 +43,16 @@ export default function Register() {
 
   const handleRegister = async (): Promise<void> => {
     if (usernameError != "" || passwordError != "") {
-      setButtonError(true);
+      setButtonError("Username or password is invalid");
       return;
     }
-    setButtonError(false);
+    setButtonError("");
 
     try {
-      const userId: string = await registerUser({ username, password });
-      console.log(`User registered with ID: ${userId}`);
+      const success = (await registerUser({ username, password })) as boolean;
+      if (success) {
+        
+      }
     } catch (error) {
       if (error instanceof ConvexError) {
         const { message, serverUsernameError, serverPasswordError } =
@@ -59,9 +61,13 @@ export default function Register() {
             serverUsernameError: boolean;
             serverPasswordError: boolean;
           };
-        setUsernameError(serverUsernameError ? message : usernameError);
-        setPasswordError(serverPasswordError ? message : passwordError);
-        console.log(`unhappy :( -> ${message}`);
+        if (serverUsernameError) {
+          setUsernameError(message);
+        } else if (serverPasswordError) {
+          setPasswordError(message);
+        } else {
+          setButtonError(message);
+        }
       } else {
         console.log("An unknown error occurred");
       }
@@ -94,9 +100,7 @@ export default function Register() {
           variant="outlined"
           className="flex-1"
         ></TextField>
-        <p className="text-red-600">
-          {buttonError ? "Username or password invalid." : ""}
-        </p>
+        <p className="text-red-600">{buttonError}</p>
         <Button variant="contained" onClick={handleRegister}>
           Submit
         </Button>
