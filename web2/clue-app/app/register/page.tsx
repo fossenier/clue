@@ -1,16 +1,16 @@
 "use client";
-import { compare, genSalt, genSaltSync, hash, hashSync } from "bcrypt-ts";
 import { useMutation } from "convex/react";
 import { ConvexError } from "convex/values";
-import { monthsShort } from "moment";
-import Error from "next/error";
-import router from "next/router";
+import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 
 import { api } from "@/convex/_generated/api";
 import { Button, TextField } from "@mui/material";
 
 export default function Register() {
+  // Redirection once logged in
+  const router = useRouter();
+
   // Form controlled user inputs
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
