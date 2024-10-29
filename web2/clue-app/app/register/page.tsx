@@ -1,22 +1,26 @@
 "use client";
-import { compare, genSalt, genSaltSync, hash, hashSync } from 'bcrypt-ts';
-import { useMutation } from 'convex/react';
-import { ConvexError } from 'convex/values';
-import { monthsShort } from 'moment';
-import Error from 'next/error';
-import React, { useState } from 'react';
+import { compare, genSalt, genSaltSync, hash, hashSync } from "bcrypt-ts";
+import { useMutation } from "convex/react";
+import { ConvexError } from "convex/values";
+import { monthsShort } from "moment";
+import Error from "next/error";
+import router from "next/router";
+import React, { useState } from "react";
 
-import { api } from '@/convex/_generated/api';
-import { Button, TextField } from '@mui/material';
+import { api } from "@/convex/_generated/api";
+import { Button, TextField } from "@mui/material";
 
 export default function Register() {
+  // Form controlled user inputs
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
+  // Error messages on user input (from server)
   const [usernameError, setUsernameError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [buttonError, setButtonError] = useState("");
 
+  // Client side username validation (server side exists)
   const isUsernameValid = (): boolean => {
     if (username.length >= 6) {
       setUsernameError("");
@@ -27,6 +31,7 @@ export default function Register() {
     }
   };
 
+  // Client side password validation (server side exists)
   const isPasswordValid = (): boolean => {
     if (password.length >= 8) {
       setPasswordError("");
@@ -37,21 +42,38 @@ export default function Register() {
     }
   };
 
+  // The registerUser Convex mutation
   const registerUser = useMutation(
     api.mutations.userAuthentication.registerUser
   );
 
   const handleRegister = async (): Promise<void> => {
+    // Don't call the server mutation when client side validation fails
     if (usernameError != "" || passwordError != "") {
       setButtonError("Username or password is invalid");
       return;
     }
+    // Clear any previous button error if the username + password is good
     setButtonError("");
 
+    // Register the user via Convex, handle any errors
     try {
-      const success = (await registerUser({ username, password })) as boolean;
-      if (success) {
-        
+      const sessionID = (await registerUser({
+        username,
+        password,
+      })) as string;
+      if (sessionID) {
+        const response = await fetch("/api/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(sessionID),
+        });
+
+        if (response.ok) {
+          router.push("/play");
+        } else {
+          alert("Registration failed");
+        }
       }
     } catch (error) {
       if (error instanceof ConvexError) {
@@ -62,14 +84,18 @@ export default function Register() {
             serverPasswordError: boolean;
           };
         if (serverUsernameError) {
+          // Convex sent a username related error, display it there
           setUsernameError(message);
         } else if (serverPasswordError) {
+          // Convex sent a password related error, display it there
           setPasswordError(message);
         } else {
+          // Convex sent an error not related necessarily to username or password
           setButtonError(message);
         }
       } else {
-        console.log("An unknown error occurred");
+        // This is an unplanned scenario, display a generic error
+        setButtonError("An unknown error occurred");
       }
     }
   };

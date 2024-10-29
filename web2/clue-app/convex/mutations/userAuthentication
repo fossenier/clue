@@ -1,28 +1,36 @@
-"use server"
+"use server";
 
-import { genSaltSync, hashSync } from 'bcrypt-ts';
-import { ConvexError, v } from 'convex/values';
-import jwt from 'jsonwebtoken';
-import { cookies } from 'next/headers';
+import { genSaltSync, hashSync } from "bcrypt-ts";
+import { ConvexError, v } from "convex/values";
 
-import { mutation } from '../_generated/server';
+import { mutation } from "../_generated/server";
 
-const SECRET_KEY = process.env.JWT_SECRET!
-
+// Creates a user account in the system
 export const registerUser = mutation({
   args: {
     username: v.string(),
     password: v.string(),
   },
   handler: async (ctx, args) => {
+    // Validate username requirements
     if (args.username.length < 6) {
-      throw new ConvexError({message: "Username is too short", serverUsernameError: true, serverPasswordError: false});
+      throw new ConvexError({
+        message: "Username is too short",
+        serverUsernameError: true,
+        serverPasswordError: false,
+      });
     }
 
+    // Validate password requirements
     if (args.password.length < 8) {
-      throw new ConvexError({message: "Password must be at least 8 characters.", serverUsernameError: false, serverPasswordError: true});
+      throw new ConvexError({
+        message: "Password must be at least 8 characters.",
+        serverUsernameError: false,
+        serverPasswordError: true,
+      });
     }
 
+    // Tell users if the username is in use (duplicates is bad)
     const existingUser = await ctx.db
       .query("user")
       .withIndex("by_username")
@@ -30,9 +38,14 @@ export const registerUser = mutation({
       .first();
 
     if (existingUser) {
-      throw new ConvexError({message: "Username already in use. Please choose another one.", serverUsernameError: true, serverPasswordError: false});
+      throw new ConvexError({
+        message: "Username already in use. Please choose another one.",
+        serverUsernameError: true,
+        serverPasswordError: false,
+      });
     }
 
+    // Hash the password
     const salt = genSaltSync(10);
     const hash = hashSync(args.password, salt);
 
@@ -42,19 +55,7 @@ export const registerUser = mutation({
       games: [],
     });
 
-    if (!SECRET_KEY) {
-      throw new ConvexError({message: "Server side error logging you into your new account, please log in manually.", serverUsernameError: false, serverPasswordError: false});
-    }
-
-    const token = jwt.sign({ userId: userId }, SECRET_KEY, { expiresIn: '7d' })
-
-    cookies().set('session', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: 60 * 60 * 24 * 7,
-        path: '/',
-    })
-
-    return true;
+    // Return the hashed userId to stamp as a cookie on the client for auth
+    return hashSync(userId, salt);
   },
 });
