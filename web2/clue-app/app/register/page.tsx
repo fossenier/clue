@@ -1,11 +1,11 @@
 "use client";
-import { useMutation } from 'convex/react';
-import { ConvexError } from 'convex/values';
-import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import { useMutation } from "convex/react";
+import { ConvexError } from "convex/values";
+import { useRouter } from "next/navigation";
+import React, { useState } from "react";
 
-import { api } from '@/convex/_generated/api';
-import { Button, TextField } from '@mui/material';
+import { api } from "@/convex/_generated/api";
+import { Button, TextField } from "@mui/material";
 
 export default function Register() {
   // Redirection once logged in
@@ -47,7 +47,7 @@ export default function Register() {
     api.mutations.userAuthentication.registerUser
   );
 
-  const useRegister = async (): Promise<void> => {
+  const handleRegister = async (): Promise<void> => {
     // Don't call the server mutation when client side validation fails
     if (usernameError != "" || passwordError != "") {
       setButtonError("Username or password is invalid");
@@ -63,7 +63,7 @@ export default function Register() {
         password,
       })) as string;
       if (sessionId) {
-        const response = await fetch("/api/register", {
+        const response = await fetch("/api/authenticate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(sessionId),
@@ -72,7 +72,7 @@ export default function Register() {
         if (response.ok) {
           router.push("/play");
         } else {
-          alert("Registration failed");
+          setButtonError("An unknown error occurred");
         }
       }
     } catch (error) {
@@ -127,7 +127,7 @@ export default function Register() {
           className="flex-1"
         ></TextField>
         <p className="text-red-600">{buttonError}</p>
-        <Button variant="contained" onClick={useRegister}>
+        <Button variant="contained" onClick={handleRegister}>
           Submit
         </Button>
       </div>

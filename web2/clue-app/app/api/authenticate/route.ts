@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
-  // Takes in the sessionId (provided from the client BY Convex)
+  // Takes in the sessionId (provided to the client by Convex)
   const sessionId = await request.json();
 
   if (sessionId) {
@@ -15,11 +15,9 @@ export async function POST(request: Request) {
       httpOnly: true, // Inaccessible to JavaScript on the client
     });
 
-    // Redirect to /play
-    // return NextResponse.redirect(new URL("/play", request.url), 303);
-    return new NextResponse("Registration successful", { status: 200 });
+    return new NextResponse("Authentication successful", { status: 200 });
   }
 
-  // Handle registration failure
-  return new NextResponse("Registration failed", { status: 400 });
+  // Handle authentication failure
+  return new NextResponse("Authentication failed", { status: 400 });
 }
