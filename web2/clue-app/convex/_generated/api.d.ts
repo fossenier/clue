@@ -16,7 +16,6 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as mutations_userAuthentication from "../mutations/userAuthentication.js";
-import type * as queries_userAuthentication from "../queries/userAuthentication.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -28,7 +27,6 @@ import type * as queries_userAuthentication from "../queries/userAuthentication.
  */
 declare const fullApi: ApiFromModules<{
   "mutations/userAuthentication": typeof mutations_userAuthentication;
-  "queries/userAuthentication": typeof queries_userAuthentication;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,

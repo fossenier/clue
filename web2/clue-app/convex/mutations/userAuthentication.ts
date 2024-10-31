@@ -117,3 +117,40 @@ export const loginUser = mutation({
     }
   },
 });
+
+// Checks if a user is logged in based on their session
+export const validateSession = mutation({
+  args: {
+    sessionId: v.string(),
+    username: v.string(),
+  },
+  handler: async (ctx, args) => {
+    // Validate username requirements
+    if (args.username.length < 6) {
+      throw new ConvexError(
+        "Error authenticating client, please try logging in again."
+      );
+    }
+
+    // Find the existing user
+    const existingUser = await ctx.db
+      .query("user")
+      .withIndex("by_username")
+      .filter((q) => q.eq(q.field("username"), args.username))
+      .first();
+
+    // Bad cookies if the username isn't valid
+    if (!existingUser) {
+      throw new ConvexError(
+        "Error authenticating client, please try logging in again."
+      );
+    }
+
+    // Check the session ID against the user's ID
+    if (compareSync(existingUser._id, args.sessionId)) {
+      return true;
+    } else {
+      return false;
+    }
+  },
+});

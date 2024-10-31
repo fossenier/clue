@@ -1,11 +1,11 @@
 "use client";
-import { useMutation } from 'convex/react';
-import { ConvexError } from 'convex/values';
-import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import { useMutation } from "convex/react";
+import { ConvexError } from "convex/values";
+import { useRouter } from "next/navigation";
+import React, { useState } from "react";
 
-import { api } from '@/convex/_generated/api';
-import { Button, TextField } from '@mui/material';
+import { api } from "@/convex/_generated/api";
+import { Button, TextField } from "@mui/material";
 
 export default function Register() {
   // Redirection once logged in
@@ -43,9 +43,7 @@ export default function Register() {
   };
 
   // The loginUser Convex mutation
-  const loginUser = useMutation(
-    api.mutations.userAuthentication.loginUser
-  );
+  const loginUser = useMutation(api.mutations.userAuthentication.loginUser);
 
   const handleRegister = async (): Promise<void> => {
     // Don't call the server mutation when client side validation fails
@@ -63,7 +61,7 @@ export default function Register() {
         password,
       })) as string;
       if (sessionId) {
-        const response = await fetch("/api/authenticate", {
+        const response = await fetch("/api/authenticateClient", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(sessionId),

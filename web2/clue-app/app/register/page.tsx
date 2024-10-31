@@ -63,10 +63,10 @@ export default function Register() {
         password,
       })) as string;
       if (sessionId) {
-        const response = await fetch("/api/authenticate", {
+        const response = await fetch("/api/authenticateClient", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(sessionId),
+          body: JSON.stringify([sessionId, username]),
         });
 
         if (response.ok) {
