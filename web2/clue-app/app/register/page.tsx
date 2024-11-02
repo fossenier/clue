@@ -1,11 +1,11 @@
 "use client";
-import { useMutation } from "convex/react";
-import { ConvexError } from "convex/values";
-import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import { useMutation } from 'convex/react';
+import { ConvexError } from 'convex/values';
+import { useRouter } from 'next/navigation';
+import React, { useState } from 'react';
 
-import { api } from "@/convex/_generated/api";
-import { Button, TextField } from "@mui/material";
+import { api } from '@/convex/_generated/api';
+import { Button, TextField } from '@mui/material';
 
 export default function Register() {
   // Redirection once logged in

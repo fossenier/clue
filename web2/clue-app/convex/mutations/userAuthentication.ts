@@ -4,6 +4,7 @@ import { compareSync, genSaltSync, hashSync } from "bcrypt-ts";
 import { ConvexError, v } from "convex/values";
 
 import { mutation } from "../_generated/server";
+import { validateUser } from "../authHelpers";
 
 // Creates a user account in the system
 export const registerUser = mutation({
@@ -125,32 +126,6 @@ export const validateSession = mutation({
     username: v.string(),
   },
   handler: async (ctx, args) => {
-    // Validate username requirements
-    if (args.username.length < 6) {
-      throw new ConvexError(
-        "Error authenticating client, please try logging in again."
-      );
-    }
-
-    // Find the existing user
-    const existingUser = await ctx.db
-      .query("user")
-      .withIndex("by_username")
-      .filter((q) => q.eq(q.field("username"), args.username))
-      .first();
-
-    // Bad cookies if the username isn't valid
-    if (!existingUser) {
-      throw new ConvexError(
-        "Error authenticating client, please try logging in again."
-      );
-    }
-
-    // Check the session ID against the user's ID
-    if (compareSync(existingUser._id, args.sessionId)) {
-      return true;
-    } else {
-      return false;
-    }
+    return validateUser(ctx, args.sessionId, args.username);
   },
 });

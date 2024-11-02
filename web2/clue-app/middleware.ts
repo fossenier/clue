@@ -1,20 +1,33 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from 'next/server';
 
-// This function can be marked `async` if using `await` inside
 export function middleware(request: NextRequest) {
-  // Users can skip login / register when they have a session cookie
+  const sessionId = request.cookies.get("session-id")?.value;
+  const username = request.cookies.get("username")?.value;
+  const hasSession = sessionId && username;
+
+  // Redirect logged-in users away from `/login` and `/register`
   if (
-    request.cookies.get("session-id") &&
-    request.cookies.get("username") &&
+    hasSession &&
     (request.nextUrl.pathname === "/login" ||
       request.nextUrl.pathname === "/register")
   ) {
-    return NextResponse.redirect(new URL("/play", request.url));
+    console.log(request.url);
+    return NextResponse.redirect(new URL("/games", request.url));
+  }
+
+  // Redirect unauthenticated users to `/login` unless they are accessing `/login` or `/register`
+  if (
+    !hasSession &&
+    request.nextUrl.pathname !== "/login" &&
+    request.nextUrl.pathname !== "/register"
+  ) {
+    console.log(request.url);
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: "/:path*",
+  matcher: ["/((?!api|_next|static|favicon.ico).*)"],
 };
