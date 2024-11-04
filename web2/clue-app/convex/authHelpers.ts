@@ -1,3 +1,5 @@
+"use server";
+
 import { compareSync } from 'bcrypt-ts';
 import { ConvexError } from 'convex/values';
 
@@ -36,4 +38,25 @@ export async function validateUser(
   } else {
     return false;
   }
+}
+
+export async function validateUsername(username: string) {
+  var valid = true;
+  // Ensure username length
+  if (username.length < 6) {
+    valid = false;
+  }
+  return valid;
+}
+
+export async function existingUsername(ctx: QueryCtx, username: string) {
+  if (!validateUsername(username)) {
+    return false;
+  }
+  const existingUser = await ctx.db
+    .query("user")
+    .withIndex("by_username")
+    .filter((q) => q.eq(q.field("username"), username))
+    .first();
+  return existingUser ? true : false;
 }

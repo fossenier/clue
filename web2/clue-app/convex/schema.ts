@@ -1,13 +1,12 @@
-import { defineSchema, defineTable } from 'convex/server';
-import { v } from 'convex/values';
+import { defineSchema, defineTable } from "convex/server";
+import { v } from "convex/values";
 
 export default defineSchema({
   user: defineTable({
     username: v.string(),
     hash: v.string(),
     games: v.array(v.id("game")),
-  })
-    .index("by_username", ["username"]),
+  }).index("by_username", ["username"]),
 
   game: defineTable({
     murderer: v.array(v.string()),
@@ -18,7 +17,7 @@ export default defineSchema({
   }),
 
   player: defineTable({
-    user: v.id("user"),
+    username: v.string(),
     algorithm: v.string(),
     cards: v.array(v.string()),
     suspect: v.string(),

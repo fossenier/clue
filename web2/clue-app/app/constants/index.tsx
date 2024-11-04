@@ -25,6 +25,14 @@ export const WEAPONS = [
   "Rope",
   "Wrench",
 ];
+export const COORDS = {
+  green: [14, 24],
+  mustard: [0, 7],
+  peacock: [23, 18],
+  plum: [23, 5],
+  scarlett: [7, 0],
+  white: [9, 24],
+};
 export const BOARD = [
   [
     "x",
