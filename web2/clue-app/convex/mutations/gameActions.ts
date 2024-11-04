@@ -1,13 +1,13 @@
 "use server";
 
-import { ConvexError, v } from 'convex/values';
+import { ConvexError, v } from "convex/values";
 
-import { COORDS, ROOMS, SUSPECTS, WEAPONS } from '../../app/constants/index';
-import { Id } from '../_generated/dataModel';
-import { mutation, MutationCtx } from '../_generated/server';
-import { existingUsername, validateUser } from '../authHelpers';
-import { algorithms } from '../clue/gameLogic';
-import { createPlayer } from './playerActions';
+import { COORDS, ROOMS, SUSPECTS, WEAPONS } from "../../app/constants/index";
+import { Doc, Id } from "../_generated/dataModel";
+import { mutation, MutationCtx } from "../_generated/server";
+import { existingUsername, validateUser } from "../authHelpers";
+import { algorithms } from "../clue/gameLogic";
+import { createPlayer } from "./playerActions";
 
 // This is what the client will be passing
 type PlayerInput = {
@@ -22,6 +22,7 @@ type ValidatedPlayer = {
   username: string;
   algorithm: string;
   suspect: SuspectKey;
+  user?: Doc<"user">;
 };
 
 function randomInt(max: number): number {
@@ -33,22 +34,27 @@ async function validatePlayers(
   ctx: MutationCtx,
   players: PlayerInput[]
 ): Promise<ValidatedPlayer[]> {
-  const player: ValidatedPlayer[] = [];
+  const validatedPlayers: ValidatedPlayer[] = [];
 
   await Promise.all(
     players.map(async (player) => {
+      console.log(player);
       if (player.username && player.suspect in COORDS) {
+        console.log("This is a valid suspect human player");
         // The username is provided, the client intends this to be a human
-        if (await existingUsername(ctx, player.username)) {
+        const user = await existingUsername(ctx, player.username);
+        if (user) {
           // The username is valid and in the system
-          players.push({
+          validatedPlayers.push({
             ...player,
             suspect: player.suspect as SuspectKey,
+            user: user,
           });
         }
       } else if (player.algorithm && algorithms.includes(player.algorithm)) {
+        console.log("This is a valid algorithm player");
         // The algorithm is provided, the client intends this to be a bot
-        players.push({
+        validatedPlayers.push({
           ...player,
           suspect: player.suspect as SuspectKey,
         });
@@ -56,7 +62,7 @@ async function validatePlayers(
     })
   );
 
-  return player;
+  return validatedPlayers;
 }
 
 // Helper function to draw murderer and remaining cards
@@ -95,6 +101,8 @@ export const createGame = mutation({
 
     const players = await validatePlayers(ctx, args.players);
 
+    console.log(players);
+
     if (players.length < 3) {
       throw new ConvexError(
         "Error creating game, not enough players to start."
@@ -131,6 +139,15 @@ export const createGame = mutation({
       players: validatedPlayerIds,
       activePlayer: validatedPlayerIds[0],
       suggestions: [],
+    });
+
+    players.forEach(async (validatedPlayer) => {
+      if (!validatedPlayer.user) {
+        return;
+      }
+      const games = validatedPlayer.user.games;
+      games.push(gameId);
+      await ctx.db.patch(validatedPlayer.user._id, { games: games });
     });
 
     return gameId;

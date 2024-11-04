@@ -1,11 +1,11 @@
 "use client";
 
-import { useQuery } from 'convex/react';
-import { useEffect, useState } from 'react';
-import { getCookie } from 'typescript-cookie';
+import { useMutation, useQuery } from "convex/react";
+import { useEffect, useState } from "react";
+import { getCookie } from "typescript-cookie";
 
-import { api } from '@/convex/_generated/api';
-import { Doc } from '@/convex/_generated/dataModel';
+import { api } from "@/convex/_generated/api";
+import { Doc } from "@/convex/_generated/dataModel";
 
 export default function Games() {
   // State for cookies and user games
@@ -46,9 +46,22 @@ export default function Games() {
     userGames
   );
 
+  const createGame = useMutation(api.mutations.gameActions.createGame);
+
+  const handleCreateGame = async () => {
+    if (sessionId && username) {
+      const players = [
+        { username: username, algorithm: "", suspect: "white" },
+        { username: "fossenier2", algorithm: "", suspect: "green" },
+        { username: "", algorithm: "random", suspect: "mustard" },
+      ];
+      await createGame({ sessionId, username, players });
+    }
+  };
+
   return (
     <div>
-      <p>Hello, {username || "Guest"}</p>
+      <p onClick={handleCreateGame}>Hello, {username || "Guest"}</p>
     </div>
   );
 }

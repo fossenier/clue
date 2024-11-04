@@ -1,9 +1,10 @@
 "use server";
 
-import { compareSync } from 'bcrypt-ts';
-import { ConvexError } from 'convex/values';
+import { compareSync } from "bcrypt-ts";
+import { ConvexError } from "convex/values";
 
-import { QueryCtx } from './_generated/server';
+import { Id } from "./_generated/dataModel";
+import { QueryCtx } from "./_generated/server";
 
 export async function validateUser(
   ctx: QueryCtx,
@@ -51,12 +52,12 @@ export async function validateUsername(username: string) {
 
 export async function existingUsername(ctx: QueryCtx, username: string) {
   if (!validateUsername(username)) {
-    return false;
+    return null;
   }
   const existingUser = await ctx.db
     .query("user")
     .withIndex("by_username")
     .filter((q) => q.eq(q.field("username"), username))
     .first();
-  return existingUser ? true : false;
+  return existingUser ? existingUser : null;
 }
