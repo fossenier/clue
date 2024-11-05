@@ -3,8 +3,7 @@
 import { ConvexError, v } from "convex/values";
 
 import { query } from "../_generated/server";
-import { validateUser } from "../authHelpers";
-import { validateSession } from "../mutations/userAuthentication";
+import { validateSession } from "../authHelpers";
 
 export const listGames = query({
   args: {
@@ -14,7 +13,7 @@ export const listGames = query({
   handler: async (ctx, args) => {
     console.log("listing games", args);
     // An invalid user should not have access to the games
-    if (!validateUser(ctx, args.sessionId, args.username)) {
+    if (!validateSession(ctx, args.sessionId, args.username)) {
       throw new ConvexError(
         "Error authenticating client, please try logging in again."
       );

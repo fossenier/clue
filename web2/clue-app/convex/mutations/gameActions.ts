@@ -5,7 +5,7 @@ import { ConvexError, v } from "convex/values";
 import { COORDS, ROOMS, SUSPECTS, WEAPONS } from "../../app/constants/index";
 import { Doc, Id } from "../_generated/dataModel";
 import { mutation, MutationCtx } from "../_generated/server";
-import { existingUsername, validateUser } from "../authHelpers";
+import { fetchUser, validateSession } from "../authHelpers";
 import { algorithms } from "../clue/gameLogic";
 import { createPlayer } from "./playerActions";
 
@@ -42,7 +42,7 @@ async function validatePlayers(
       if (player.username && player.suspect in COORDS) {
         console.log("This is a valid suspect human player");
         // The username is provided, the client intends this to be a human
-        const user = await existingUsername(ctx, player.username);
+        const user = await fetchUser(ctx, player.username);
         if (user) {
           // The username is valid and in the system
           validatedPlayers.push({
@@ -51,7 +51,11 @@ async function validatePlayers(
             user: user,
           });
         }
-      } else if (player.algorithm && algorithms.includes(player.algorithm)) {
+      } else if (
+        player.algorithm &&
+        algorithms.includes(player.algorithm) &&
+        player.suspect in COORDS
+      ) {
         console.log("This is a valid algorithm player");
         // The algorithm is provided, the client intends this to be a bot
         validatedPlayers.push({
@@ -93,7 +97,7 @@ export const createGame = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    if (!validateUser) {
+    if (!validateSession(ctx, args.sessionId, args.username)) {
       throw new ConvexError(
         "Error authenticating client, please try logging in again."
       );
@@ -151,5 +155,61 @@ export const createGame = mutation({
     });
 
     return gameId;
+  },
+});
+
+export const removeGame = mutation({
+  args: {
+    sessionId: v.string(),
+    username: v.string(),
+    gameId: v.id("game"),
+  },
+  handler: async (ctx, args) => {
+    // Make sure the user calling this function is real and authenticated
+    const user = await validateSession(ctx, args.sessionId, args.username);
+    if (!user) {
+      throw new ConvexError(
+        "Error authenticating client, please try logging in again."
+      );
+    }
+
+    // Make sure the user is trying to delete is one of their games
+    if (!user.games.includes(args.gameId)) {
+      throw new ConvexError("Error fetching requested game, please try again.");
+    }
+
+    // Fetch the game that the user is attempting to delete
+    const game = await ctx.db.get(args.gameId);
+
+    if (!game) {
+      throw new ConvexError("Error fetching requested game, please try again.");
+    }
+
+    // Iterate through the players in the game
+    game.players.forEach(async (playerId) => {
+      // Fetch them by Id from the system
+      const player = await ctx.db.get(playerId);
+
+      if (!player) {
+        return;
+      }
+
+      // Fetch the users associated with the usernames on each player
+      const user = await fetchUser(ctx, player.username);
+
+      if (!user) {
+        return;
+      }
+
+      // Remove from that user's games the specified gameId
+      const updatedGames = user.games.filter(
+        (gameId) => gameId !== args.gameId
+      );
+      await ctx.db.patch(user._id, { games: updatedGames });
+    });
+
+    // Delete the game from the database
+    await ctx.db.delete(args.gameId);
+    return true;
   },
 });

@@ -4,7 +4,7 @@ import { compareSync, genSaltSync, hashSync } from "bcrypt-ts";
 import { ConvexError, v } from "convex/values";
 
 import { mutation } from "../_generated/server";
-import { validateUser } from "../authHelpers";
+import { fetchUser } from "../authHelpers";
 
 // Creates a user account in the system
 export const registerUser = mutation({
@@ -13,15 +13,6 @@ export const registerUser = mutation({
     password: v.string(),
   },
   handler: async (ctx, args) => {
-    // Validate username requirements
-    if (args.username.length < 6) {
-      throw new ConvexError({
-        message: "Username is too short",
-        serverUsernameError: true,
-        serverPasswordError: false,
-      });
-    }
-
     // Validate password requirements
     if (args.password.length < 8) {
       throw new ConvexError({
@@ -32,11 +23,7 @@ export const registerUser = mutation({
     }
 
     // Tell users if the username is in use (duplicates is bad)
-    const existingUser = await ctx.db
-      .query("user")
-      .withIndex("by_username")
-      .filter((q) => q.eq(q.field("username"), args.username))
-      .first();
+    const existingUser = await fetchUser(ctx, args.username);
 
     if (existingUser) {
       throw new ConvexError({
@@ -68,15 +55,6 @@ export const loginUser = mutation({
     password: v.string(),
   },
   handler: async (ctx, args) => {
-    // Validate username requirements
-    if (args.username.length < 6) {
-      throw new ConvexError({
-        message: "Username is too short",
-        serverUsernameError: true,
-        serverPasswordError: false,
-      });
-    }
-
     // Validate password requirements
     if (args.password.length < 8) {
       throw new ConvexError({
@@ -87,45 +65,28 @@ export const loginUser = mutation({
     }
 
     // Get the user's account to login to
-    const existingUser = await ctx.db
-      .query("user")
-      .withIndex("by_username")
-      .filter((q) => q.eq(q.field("username"), args.username))
-      .first();
+    const existingUser = await fetchUser(ctx, args.username);
 
-    // Attempt to log this user in
-    if (existingUser) {
-      // Check their password against their hash
-      if (compareSync(args.password, existingUser.hash)) {
-        // Return the hashed userId to stamp as a cookie on the client for auth
-        const salt = genSaltSync(10);
-        return hashSync(existingUser._id, salt);
-      } else {
-        // Their password is incorrect, so don't log them in
-        throw new ConvexError({
-          message: "Incorrect username or password.",
-          serverUsernameError: false,
-          serverPasswordError: false,
-        });
-      }
-    } else {
-      // The user doesn't exist, so don't log them in
+    // The user must exist to login
+    if (!existingUser) {
       throw new ConvexError({
         message: "Incorrect username or password.",
         serverUsernameError: false,
         serverPasswordError: false,
       });
     }
-  },
-});
 
-// Checks if a user is logged in based on their session
-export const validateSession = mutation({
-  args: {
-    sessionId: v.string(),
-    username: v.string(),
-  },
-  handler: async (ctx, args) => {
-    return validateUser(ctx, args.sessionId, args.username);
+    // The password must match the hash to login
+    if (!compareSync(args.password, existingUser.hash)) {
+      throw new ConvexError({
+        message: "Incorrect username or password.",
+        serverUsernameError: false,
+        serverPasswordError: false,
+      });
+    }
+
+    // Return the hashed userId to stamp as a cookie on the client for auth
+    const salt = genSaltSync(10);
+    return hashSync(existingUser._id, salt);
   },
 });

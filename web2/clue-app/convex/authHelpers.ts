@@ -6,41 +6,7 @@ import { ConvexError } from "convex/values";
 import { Id } from "./_generated/dataModel";
 import { QueryCtx } from "./_generated/server";
 
-export async function validateUser(
-  ctx: QueryCtx,
-  sessionId: string,
-  username: string
-) {
-  console.log("validateUser");
-  // Validate username requirements
-  if (username.length < 6) {
-    throw new ConvexError(
-      "Error authenticating client, please try logging in again."
-    );
-  }
-
-  // Find the existing user
-  const existingUser = await ctx.db
-    .query("user")
-    .withIndex("by_username")
-    .filter((q) => q.eq(q.field("username"), username))
-    .first();
-
-  // Bad cookies if the username isn't valid
-  if (!existingUser) {
-    throw new ConvexError(
-      "Error authenticating client, please try logging in again."
-    );
-  }
-
-  // Check the session ID against the user's ID
-  if (compareSync(existingUser._id, sessionId)) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
+// Checks to see if the username meets system requirements
 export async function validateUsername(username: string) {
   var valid = true;
   // Ensure username length
@@ -50,7 +16,8 @@ export async function validateUsername(username: string) {
   return valid;
 }
 
-export async function existingUsername(ctx: QueryCtx, username: string) {
+// Checks to see if the username is already in the system
+export async function fetchUser(ctx: QueryCtx, username: string) {
   if (!validateUsername(username)) {
     return null;
   }
@@ -60,4 +27,24 @@ export async function existingUsername(ctx: QueryCtx, username: string) {
     .filter((q) => q.eq(q.field("username"), username))
     .first();
   return existingUser ? existingUser : null;
+}
+
+// Checks to see if a session is valid (username in session,
+// and sessionId is a valid hash of the user's Id)
+export async function validateSession(
+  ctx: QueryCtx,
+  sessionId: string,
+  username: string
+) {
+  const existingUser = await fetchUser(ctx, username);
+
+  // Bad cookies if the username isn't valid
+  if (!existingUser) {
+    throw new ConvexError(
+      "Error authenticating client, please try logging in again."
+    );
+  }
+
+  // Check the session ID against the user's ID
+  return compareSync(existingUser._id, sessionId) ? existingUser : null;
 }
