@@ -198,6 +198,8 @@ export const removeGame = mutation({
       const user = await fetchUser(ctx, player.username);
 
       if (!user) {
+        // This was a bot player, no games to remove
+        await ctx.db.delete(playerId);
         return;
       }
 
@@ -206,6 +208,28 @@ export const removeGame = mutation({
         (gameId) => gameId !== args.gameId
       );
       await ctx.db.patch(user._id, { games: updatedGames });
+
+      // Delete the player from the database (they exist only for games)
+      await ctx.db.delete(playerId);
+    });
+
+    // Iterate through the suggestions in the game
+    game.suggestions.forEach(async (suggestionId) => {
+      // Fetch the suggestion by Id from the system
+      const suggestion = await ctx.db.get(suggestionId);
+
+      if (!suggestion) {
+        return;
+      }
+
+      // Iterate through the responses to each suggestion
+      suggestion.responses.forEach(async (responseId) => {
+        // Delete the response from the database
+        await ctx.db.delete(responseId);
+      });
+
+      // Delete the suggestion from the database
+      await ctx.db.delete(suggestionId);
     });
 
     // Delete the game from the database
