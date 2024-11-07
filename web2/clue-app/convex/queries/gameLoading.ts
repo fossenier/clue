@@ -1,9 +1,10 @@
 "use server";
 
-import { ConvexError, v } from "convex/values";
+import { ConvexError, v } from 'convex/values';
 
-import { query } from "../_generated/server";
-import { validateSession } from "../authHelpers";
+import { Doc, Id } from '../_generated/dataModel';
+import { query } from '../_generated/server';
+import { validateSession } from '../authHelpers';
 
 export const listGames = query({
   args: {
@@ -11,22 +12,8 @@ export const listGames = query({
     username: v.string(),
   },
   handler: async (ctx, args) => {
-    console.log("listing games", args);
     // An invalid user should not have access to the games
-    if (!validateSession(ctx, args.sessionId, args.username)) {
-      throw new ConvexError(
-        "Error authenticating client, please try logging in again."
-      );
-    }
-
-    // Find the user
-    const user = await ctx.db
-      .query("user")
-      .withIndex("by_username")
-      .filter((q) => q.eq(q.field("username"), args.username))
-      .first();
-
-    // Return their games if they exst, otherwise error
+    const user = await validateSession(ctx, args.sessionId, args.username);
     if (!user) {
       throw new ConvexError(
         "Error authenticating client, please try logging in again."
@@ -34,7 +21,31 @@ export const listGames = query({
     }
 
     // Query the game documents based on the user's game IDs
-    console.log("for", user);
     return Promise.all((user.games ?? []).map((gameId) => ctx.db.get(gameId)));
+  },
+});
+
+export const getGame = query({
+  args: {
+    sessionId: v.string(),
+    username: v.string(),
+    gameId: v.id("game"),
+  },
+  handler: async (ctx, args) => {
+    // An invalid user should not have access to the games
+    const user = await validateSession(ctx, args.sessionId, args.username);
+    if (!user) {
+      throw new ConvexError(
+        "Error authenticating client, please try logging in again."
+      );
+    }
+
+    // If the game is not in the user's games, they should not have access
+    if (!user.games.includes(args.gameId)) {
+      throw new ConvexError("Error fetching requested game, please try again.");
+    }
+
+    // Fetch the game document
+    return ctx.db.get(args.gameId);
   },
 });

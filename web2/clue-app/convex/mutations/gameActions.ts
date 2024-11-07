@@ -1,13 +1,13 @@
 "use server";
 
-import { ConvexError, v } from "convex/values";
+import { ConvexError, v } from 'convex/values';
 
-import { COORDS, ROOMS, SUSPECTS, WEAPONS } from "../../app/constants/index";
-import { Doc, Id } from "../_generated/dataModel";
-import { mutation, MutationCtx } from "../_generated/server";
-import { fetchUser, validateSession } from "../authHelpers";
-import { algorithms } from "../clue/gameLogic";
-import { createPlayer } from "./playerActions";
+import { COORDS, ROOMS, SUSPECTS, WEAPONS } from '../../app/constants/index';
+import { Doc, Id } from '../_generated/dataModel';
+import { mutation, MutationCtx } from '../_generated/server';
+import { fetchUser, validateSession } from '../authHelpers';
+import { algorithms } from '../clue/gameLogic';
+import { createPlayer } from './playerActions';
 
 // This is what the client will be passing
 type PlayerInput = {

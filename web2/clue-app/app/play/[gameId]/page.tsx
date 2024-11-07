@@ -1,40 +1,60 @@
 "use client";
 
-import { useParams } from 'next/navigation';
+import { useMutation, useQueries, useQuery } from 'convex/react';
+import { useParams, useRouter } from 'next/navigation';
+import { use, useEffect, useState } from 'react';
+import { getCookie } from 'typescript-cookie';
 
 import { useGameContext } from '@/app/gameContext';
-import { Doc } from '@/convex/_generated/dataModel';
+import { api } from '@/convex/_generated/api';
+import { Doc, Id } from '@/convex/_generated/dataModel';
 
 export default function ClueView() {
-  // Get the game ID from the URL
+  // Context management
   const params = useParams();
   const gameId = params.gameId;
-
-  // Check if the game context is available (from /games)
   const gameContext = useGameContext();
-  if (!gameContext.gameData) {
-    // Fetchy
-  }
 
-  // Get the game data if it's not available
-  console.log(gameContext.gameData);
-  if (!gameContext.gameData) {
-    // Fetch game details from Convex
-    console.log("Fetching game details...");
-  }
+  // Session Id and username from cookies
+  const [sessionId, setSessionId] = useState<string | undefined>(undefined);
+  const [username, setUsername] = useState<string | undefined>(undefined);
 
-  // Replace with real data fetching logic
-  const gameDetails = {
-    name: "Example Game",
-    description: "An exciting game.",
-  };
+  // The user's game (from context or Convex)
+  const [game, setGame] = useState<Doc<"game"> | undefined>(undefined);
+
+  // Convex query to get the game
+  const queryResult = useQuery(
+    api.queries.gameLoading.getGame,
+    sessionId && username && gameId
+      ? {
+          sessionId: sessionId,
+          username: username,
+          gameId: gameId as Id<"game">,
+        }
+      : "skip"
+  );
+
+  useEffect(() => {
+    const session = getCookie("session-id");
+    const username = getCookie("username");
+    console.log("Setting session and username...");
+    setSessionId(session);
+    setUsername(username);
+  }, []);
+
+  useEffect(() => {
+    if (gameContext.gameData) {
+      console.log("Using game data from context...");
+      setGame(gameContext.gameData);
+    } else if (queryResult) {
+      console.log("Using game data from Convex...");
+      setGame(queryResult);
+    }
+  }, [queryResult, gameContext.gameData]);
 
   return (
     <div>
-      <h1>
-        Game: {gameDetails.name} (ID: {gameId})
-      </h1>
-      <p>{gameDetails.description}</p>
+      <h1>{game ? `Game Details -> ${game.murderer}` : "Loading..."}</h1>
     </div>
   );
 }
