@@ -1,24 +1,23 @@
 "use client";
 
-import { useMutation, useQuery } from "convex/react";
-import { useEffect, useState } from "react";
-import { getCookie } from "typescript-cookie";
+import { useMutation, useQuery } from 'convex/react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { getCookie } from 'typescript-cookie';
 
-import { api } from "@/convex/_generated/api";
-import { Doc, Id } from "@/convex/_generated/dataModel";
-import { SUSPECTS } from "@constants/index";
-import { algorithms } from "@convex/clue/gameLogic";
-import {
-  Button,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-  Stack,
-  TextField,
-} from "@mui/material";
+import { api } from '@/convex/_generated/api';
+import { Doc, Id } from '@/convex/_generated/dataModel';
+import { SUSPECTS } from '@constants/index';
+import { algorithms } from '@convex/clue/gameLogic';
+import { Button, FormControl, InputLabel, MenuItem, Select, Stack, TextField } from '@mui/material';
+
+import { useGameContext } from '../gameContext';
 
 const Games: React.FC = () => {
+  // Routing and context management
+  const router = useRouter();
+  const { setGameData } = useGameContext();
+
   // Session Id and username from cookies
   const [sessionId, setSessionId] = useState<string | undefined>(undefined);
   const [username, setUsername] = useState<string | undefined>(undefined);
@@ -143,6 +142,11 @@ const Games: React.FC = () => {
     }
   };
 
+  const handlePlayGame = (game: Doc<"game">) => {
+    setGameData(game);
+    router.push(`/play/${game._id}`);
+  };
+
   return (
     <div className="h-dvh w-dvw bg-white p-4 flex flex-col items-center">
       <div className="w-1/3 bg-indigo-300 rounded-md p-2 flex justify-center">
@@ -164,6 +168,14 @@ const Games: React.FC = () => {
                 <p>Name: {game._id}</p>
                 <p>Created: {new Date(game._creationTime).toLocaleString()}</p>
               </div>
+              <Button
+                variant="contained"
+                color="secondary"
+                className="w-1/6"
+                onClick={() => handlePlayGame(game)}
+              >
+                Play
+              </Button>
               <Button
                 variant="contained"
                 color="secondary"
