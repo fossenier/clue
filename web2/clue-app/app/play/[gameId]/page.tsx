@@ -25,12 +25,31 @@ export default function ClueView() {
 
   // The user's game to interact with (from context or Convex)
   const [game, setGame] = useState<Doc<"game"> | undefined>(undefined);
+  const [userPlayer, setUserPlayer] = useState<Doc<"player"> | undefined>(
+    undefined
+  );
+  const [otherPlayers, setOtherPlayers] = useState<Doc<"player">[] | undefined>(
+    undefined
+  );
 
   // Convex query to get the game from the database
   // On startup only runs when context is not present
   const gameQueryResult = useQuery(
     api.queries.gameLoading.getGame,
     sessionId && username && gameId && !gameContext.gameData
+      ? {
+          sessionId: sessionId,
+          username: username,
+          gameId: gameId as Id<"game">,
+        }
+      : "skip"
+  );
+
+  // Convex query to get the player data from the database
+  // Will update as the game progresses
+  const playerQueryResult = useQuery(
+    api.queries.playerLoading.listPlayers,
+    sessionId && username && gameId && game
       ? {
           sessionId: sessionId,
           username: username,
@@ -56,6 +75,25 @@ export default function ClueView() {
     }
   }, [gameQueryResult, gameContext.gameData]);
 
+  // Gets the game's player data
+  useEffect(() => {
+    if (playerQueryResult) {
+      setUserPlayer(
+        playerQueryResult.find((player) => player?.username === username) ??
+          undefined
+      );
+      setOtherPlayers(
+        playerQueryResult.filter((player) => {
+          if (player) {
+            return player.username !== username;
+          } else {
+            return false;
+          }
+        }) as Doc<"player">[]
+      );
+    }
+  }, [playerQueryResult, username]);
+
   // The idx is given by Board
   const handleBoardTileSelect = (idx: number) => {
     console.log(`Selected row ${Math.floor(idx / 25)} and column ${idx % 25}`);
@@ -64,7 +102,7 @@ export default function ClueView() {
   const formatPanelData = () => {
     return {
       cardSidebar: game?.cardSidebar ?? ["Loading..."],
-      cardHand: game?.cardSidebar ?? ["Loading..."],
+      cardHand: userPlayer?.cards ?? ["Loading..."],
     };
   };
 

@@ -35,8 +35,12 @@ const Panel: React.FC<PanelProps> = ({
   return (
     <div className="h-full w-full bg-white">
       <Stack spacing={2} direction={"column"}>
-        <Cards cardSourceName="My Cards" sourceCards={cardHand}></Cards>
-        <Cards cardSourceName="Sidebar" sourceCards={cardSidebar}></Cards>
+        {cardHand.length !== 0 ? (
+          <Cards cardSourceName="My Cards" sourceCards={cardHand}></Cards>
+        ) : null}
+        {cardSidebar.length !== 0 ? (
+          <Cards cardSourceName="Sidebar" sourceCards={cardSidebar}></Cards>
+        ) : null}
         <Roll></Roll>
         <Suggest></Suggest>
       </Stack>

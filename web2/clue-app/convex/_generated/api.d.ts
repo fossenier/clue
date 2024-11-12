@@ -21,6 +21,7 @@ import type * as mutations_gameActions from "../mutations/gameActions.js";
 import type * as mutations_playerActions from "../mutations/playerActions.js";
 import type * as mutations_userAuthentication from "../mutations/userAuthentication.js";
 import type * as queries_gameLoading from "../queries/gameLoading.js";
+import type * as queries_playerLoading from "../queries/playerLoading.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -37,6 +38,7 @@ declare const fullApi: ApiFromModules<{
   "mutations/playerActions": typeof mutations_playerActions;
   "mutations/userAuthentication": typeof mutations_userAuthentication;
   "queries/gameLoading": typeof queries_gameLoading;
+  "queries/playerLoading": typeof queries_playerLoading;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,
