@@ -1,16 +1,20 @@
 "use client";
 
-import { useMutation, useQueries, useQuery } from 'convex/react';
-import { useParams, useRouter } from 'next/navigation';
-import { use, useEffect, useState } from 'react';
-import { getCookie } from 'typescript-cookie';
+import { useQuery } from "convex/react";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { getCookie } from "typescript-cookie";
 
-import { useGameContext } from '@/app/gameContext';
-import { api } from '@/convex/_generated/api';
-import { Doc, Id } from '@/convex/_generated/dataModel';
+import { useGameContext } from "@/app/gameContext";
+import { api } from "@/convex/_generated/api";
+import { Doc, Id } from "@/convex/_generated/dataModel";
+
+import Board from "./Board";
+import Panel from "./Panel";
 
 export default function ClueView() {
-  // Context management
+  // Context management (this will hold the game data if the user comes
+  // from /games)
   const params = useParams();
   const gameId = params.gameId;
   const gameContext = useGameContext();
@@ -19,13 +23,14 @@ export default function ClueView() {
   const [sessionId, setSessionId] = useState<string | undefined>(undefined);
   const [username, setUsername] = useState<string | undefined>(undefined);
 
-  // The user's game (from context or Convex)
+  // The user's game to interact with (from context or Convex)
   const [game, setGame] = useState<Doc<"game"> | undefined>(undefined);
 
-  // Convex query to get the game
-  const queryResult = useQuery(
+  // Convex query to get the game from the database
+  // On startup only runs when context is not present
+  const gameQueryResult = useQuery(
     api.queries.gameLoading.getGame,
-    sessionId && username && gameId
+    sessionId && username && gameId && !gameContext.gameData
       ? {
           sessionId: sessionId,
           username: username,
@@ -34,27 +39,45 @@ export default function ClueView() {
       : "skip"
   );
 
+  // Sets the sessionId and username from cookies when the page loads
   useEffect(() => {
-    const session = getCookie("session-id");
+    const sessionId = getCookie("session-id");
     const username = getCookie("username");
-    console.log("Setting session and username...");
-    setSessionId(session);
+    setSessionId(sessionId);
     setUsername(username);
   }, []);
 
+  // Sets the game from context or Convex when the page loads
   useEffect(() => {
     if (gameContext.gameData) {
-      console.log("Using game data from context...");
       setGame(gameContext.gameData);
-    } else if (queryResult) {
-      console.log("Using game data from Convex...");
-      setGame(queryResult);
+    } else if (gameQueryResult) {
+      setGame(gameQueryResult);
     }
-  }, [queryResult, gameContext.gameData]);
+  }, [gameQueryResult, gameContext.gameData]);
+
+  // The idx is given by Board
+  const handleBoardTileSelect = (idx: number) => {
+    console.log(`Selected row ${Math.floor(idx / 25)} and column ${idx % 25}`);
+  };
+
+  const formatPanelData = () => {
+    return {
+      cardSidebar: game?.cardSidebar ?? ["Loading..."],
+      cardHand: game?.cardSidebar ?? ["Loading..."],
+    };
+  };
 
   return (
     <div>
-      <h1>{game ? `Game Details -> ${game.murderer}` : "Loading..."}</h1>
+      <div className="flex h-dvh w-dvw">
+        <div className="w-1/6">
+          <Panel {...formatPanelData()} />
+        </div>
+        <div className="w-5/6">
+          <Board onTileSelect={handleBoardTileSelect} />
+        </div>
+      </div>
     </div>
   );
 }

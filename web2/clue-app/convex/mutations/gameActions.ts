@@ -1,13 +1,13 @@
 "use server";
 
-import { ConvexError, v } from 'convex/values';
+import { ConvexError, v } from "convex/values";
 
-import { COORDS, ROOMS, SUSPECTS, WEAPONS } from '../../app/constants/index';
-import { Doc, Id } from '../_generated/dataModel';
-import { mutation, MutationCtx } from '../_generated/server';
-import { fetchUser, validateSession } from '../authHelpers';
-import { algorithms } from '../clue/gameLogic';
-import { createPlayer } from './playerActions';
+import { COORDS, ROOMS, SUSPECTS, WEAPONS } from "../../app/constants/index";
+import { Doc, Id } from "../_generated/dataModel";
+import { mutation, MutationCtx } from "../_generated/server";
+import { fetchUser, validateSession } from "../authHelpers";
+import { algorithms } from "../clue/gameLogic";
+import { createPlayer } from "./playerActions";
 
 // This is what the client will be passing
 type PlayerInput = {
@@ -38,7 +38,6 @@ async function validatePlayers(
 
   await Promise.all(
     players.map(async (player) => {
-      console.log(player);
       if (player.username && player.suspect in COORDS) {
         console.log("This is a valid suspect human player");
         // The username is provided, the client intends this to be a human
@@ -105,8 +104,6 @@ export const createGame = mutation({
 
     const players = await validatePlayers(ctx, args.players);
 
-    console.log(players);
-
     if (players.length < 3) {
       throw new ConvexError(
         "Error creating game, not enough players to start."
@@ -116,15 +113,15 @@ export const createGame = mutation({
     const { murdererCards, remainingCards } = drawMurdererCards();
     const handSize = Math.floor(remainingCards.length / players.length);
 
-    const validatedPlayerIds: Id<"player">[] = await Promise.all(
-      players.map((validatedPlayer) => {
+    const validatedPlayerEntries = await Promise.all(
+      players.map(async (validatedPlayer) => {
         const hand = Array.from({ length: handSize }, () => {
           const randomIndex = randomInt(remainingCards.length);
           return remainingCards.splice(randomIndex, 1)[0];
         });
 
         const [x, y] = COORDS[validatedPlayer.suspect];
-        return createPlayer(
+        const playerId = await createPlayer(
           ctx,
           validatedPlayer.username,
           validatedPlayer.algorithm,
@@ -133,6 +130,8 @@ export const createGame = mutation({
           x,
           y
         );
+
+        return { username: validatedPlayer.username, playerId };
       })
     );
 
@@ -140,18 +139,17 @@ export const createGame = mutation({
     const gameId = await ctx.db.insert("game", {
       murderer: murdererCards,
       cardSidebar: remainingCards,
-      players: validatedPlayerIds,
-      activePlayer: validatedPlayerIds[0],
+      players: validatedPlayerEntries,
+      activePlayer: validatedPlayerEntries[0].playerId,
       suggestions: [],
     });
 
     players.forEach(async (validatedPlayer) => {
-      if (!validatedPlayer.user) {
-        return;
+      if (validatedPlayer.user) {
+        const games = validatedPlayer.user.games;
+        games.push(gameId);
+        await ctx.db.patch(validatedPlayer.user._id, { games: games });
       }
-      const games = validatedPlayer.user.games;
-      games.push(gameId);
-      await ctx.db.patch(validatedPlayer.user._id, { games: games });
     });
 
     return gameId;
@@ -186,51 +184,43 @@ export const removeGame = mutation({
     }
 
     // Iterate through the players in the game
-    game.players.forEach(async (playerId) => {
+    await Promise.all(
       // Fetch them by Id from the system
-      const player = await ctx.db.get(playerId);
+      game.players.map(async ({ playerId }) => {
+        const player = await ctx.db.get(playerId);
+        if (!player) return;
 
-      if (!player) {
-        return;
-      }
-
-      // Fetch the users associated with the usernames on each player
-      const user = await fetchUser(ctx, player.username);
-
-      if (!user) {
-        // This was a bot player, no games to remove
+        const playerUser = await fetchUser(ctx, player.username);
+        if (playerUser) {
+          // Remove the game from the user's games
+          const updatedGames = playerUser.games.filter(
+            (gameId) => gameId !== args.gameId
+          );
+          await ctx.db.patch(playerUser._id, { games: updatedGames });
+        }
+        // Delete the player from the database (they exist only for games)
         await ctx.db.delete(playerId);
-        return;
-      }
-
-      // Remove from that user's games the specified gameId
-      const updatedGames = user.games.filter(
-        (gameId) => gameId !== args.gameId
-      );
-      await ctx.db.patch(user._id, { games: updatedGames });
-
-      // Delete the player from the database (they exist only for games)
-      await ctx.db.delete(playerId);
-    });
+      })
+    );
 
     // Iterate through the suggestions in the game
-    game.suggestions.forEach(async (suggestionId) => {
+    await Promise.all(
       // Fetch the suggestion by Id from the system
-      const suggestion = await ctx.db.get(suggestionId);
+      game.suggestions.map(async (suggestionId) => {
+        const suggestion = await ctx.db.get(suggestionId);
+        if (!suggestion) return;
 
-      if (!suggestion) {
-        return;
-      }
-
-      // Iterate through the responses to each suggestion
-      suggestion.responses.forEach(async (responseId) => {
-        // Delete the response from the database
-        await ctx.db.delete(responseId);
-      });
-
-      // Delete the suggestion from the database
-      await ctx.db.delete(suggestionId);
-    });
+        // Iterate through the responses to each suggestion
+        await Promise.all(
+          suggestion.responses.map(async (responseId) => {
+            // Delete the response from the database
+            await ctx.db.delete(responseId);
+          })
+        );
+        // Delete the suggestion from the database
+        await ctx.db.delete(suggestionId);
+      })
+    );
 
     // Delete the game from the database
     await ctx.db.delete(args.gameId);

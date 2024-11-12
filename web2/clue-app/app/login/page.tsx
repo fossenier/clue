@@ -1,13 +1,13 @@
 "use client";
-import { useMutation } from 'convex/react';
-import { ConvexError } from 'convex/values';
-import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import { useMutation } from "convex/react";
+import { ConvexError } from "convex/values";
+import { useRouter } from "next/navigation";
+import React, { useState } from "react";
 
-import { api } from '@/convex/_generated/api';
-import { Button, TextField } from '@mui/material';
+import { api } from "@/convex/_generated/api";
+import { Button, TextField } from "@mui/material";
 
-export default function Register() {
+export default function Login() {
   // Redirection once logged in
   const router = useRouter();
 
@@ -45,7 +45,7 @@ export default function Register() {
   // The loginUser Convex mutation
   const loginUser = useMutation(api.mutations.userAuthentication.loginUser);
 
-  const handleRegister = async (): Promise<void> => {
+  const handleLogin = async (): Promise<void> => {
     // Don't call the server mutation when client side validation fails
     if (usernameError != "" || passwordError != "") {
       setButtonError("Username or password is invalid");
@@ -54,7 +54,7 @@ export default function Register() {
     // Clear any previous button error if the username + password is good
     setButtonError("");
 
-    // Register the user via Convex, handle any errors
+    // Login the user via Convex, handle any errors
     try {
       const sessionId = (await loginUser({
         username,
@@ -101,7 +101,7 @@ export default function Register() {
   return (
     <div className="h-dvh w-dvw flex flex-row justify-center items-center bg-white">
       <div className="py-8 px-12 flex flex-col items-center gap-2 bg-periwinkle rounded-3xl">
-        <p className="font-bold font-sans text-4xl text-chartreuse">Register</p>
+        <p className="font-bold font-sans text-4xl text-chartreuse">Login</p>
         <TextField
           error={usernameError != ""}
           helperText={usernameError}
@@ -125,7 +125,7 @@ export default function Register() {
           className="flex-1"
         ></TextField>
         <p className="text-red-600">{buttonError}</p>
-        <Button variant="contained" onClick={handleRegister}>
+        <Button variant="contained" onClick={handleLogin}>
           Submit
         </Button>
       </div>

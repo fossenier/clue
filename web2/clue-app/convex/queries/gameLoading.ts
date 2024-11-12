@@ -1,10 +1,10 @@
 "use server";
 
-import { ConvexError, v } from 'convex/values';
+import { ConvexError, v } from "convex/values";
 
-import { Doc, Id } from '../_generated/dataModel';
-import { query } from '../_generated/server';
-import { validateSession } from '../authHelpers';
+import { Doc, Id } from "../_generated/dataModel";
+import { query } from "../_generated/server";
+import { validateSession } from "../authHelpers";
 
 export const listGames = query({
   args: {

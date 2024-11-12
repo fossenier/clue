@@ -1,12 +1,13 @@
 "use client";
+
 import React from "react";
 
 import Board from "./Board";
 import Panel from "./Panel";
 
 export default function Play() {
-  const updateBoardData = (idx: number) => {
-    console.log(idx);
+  const selectBoardTile = (idx: number) => {
+    console.log(`Selected row ${Math.floor(idx / 25)} and column ${idx % 25}`);
   };
 
   return (
@@ -15,7 +16,7 @@ export default function Play() {
         <Panel />
       </div>
       <div className="w-5/6">
-        <Board onTileClick={updateBoardData} />
+        <Board onTileClick={selectBoardTile} />
       </div>
     </div>
   );

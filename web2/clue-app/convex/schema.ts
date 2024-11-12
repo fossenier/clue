@@ -1,5 +1,5 @@
-import { defineSchema, defineTable } from 'convex/server';
-import { v } from 'convex/values';
+import { defineSchema, defineTable } from "convex/server";
+import { v } from "convex/values";
 
 export default defineSchema({
   user: defineTable({
@@ -11,7 +11,9 @@ export default defineSchema({
   game: defineTable({
     murderer: v.array(v.string()),
     cardSidebar: v.array(v.string()),
-    players: v.array(v.id("player")),
+    players: v.array(
+      v.object({ username: v.string(), playerId: v.id("player") })
+    ),
     activePlayer: v.id("player"),
     suggestions: v.array(v.id("suggestion")),
   }),
