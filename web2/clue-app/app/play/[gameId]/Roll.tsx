@@ -1,22 +1,56 @@
-import React, { useState } from "react";
-import { move } from "react-big-calendar";
+"use client";
 
-import { SUSPECTS } from "@constants/index";
+import { useMutation } from "convex/react";
+import React, { useState } from "react";
+
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 import { Button } from "@mui/material";
 
-const Roll: React.FC = () => {
+interface RollProps {
+  sessionId: string;
+  username: string;
+  gameId: Id<"game">;
+  playerId: Id<"player">;
+  isPlayerTurn: boolean;
+  moveRoll: number | null;
+  movesLeft: number | null;
+}
+
+const Roll: React.FC<RollProps> = ({
+  sessionId,
+  username,
+  gameId,
+  playerId,
+  isPlayerTurn,
+  moveRoll,
+  movesLeft,
+}) => {
   // Store the user's rolls this turn, and how much movement they have left
-  const [rollResult, setRollResult] = useState<number | null>(null);
-  const [movesLeft, setMovesLeft] = useState<number | null>(null);
+  const [rollResult, setRollResult] = useState<number | null>(moveRoll);
+  const [movesLeftDisplay, setMovesLeftDisplay] = useState<number | null>(
+    movesLeft
+  );
+
+  // Convex mutation to roll the dice
+  const rollDice = useMutation(api.mutations.playerActions.rollDice);
 
   // Roll the user's dice for the turn
-  const rollDice = () => {
-    const dice1 = Math.floor(Math.random() * 6) + 1;
-    const dice2 = Math.floor(Math.random() * 6) + 1;
-    const total = dice1 + dice2;
+  const handleRollDice = async () => {
+    if (sessionId && username && gameId && playerId) {
+      console.log(
+        `Rolling the dice ${sessionId} ${username} ${gameId} ${playerId}`
+      );
+      const dice = await rollDice({
+        sessionId: sessionId,
+        username: username,
+        gameId: gameId,
+        playerId: playerId,
+      });
 
-    setRollResult(total);
-    setMovesLeft(total);
+      setRollResult(dice);
+      setMovesLeftDisplay(dice);
+    }
   };
 
   return (
@@ -27,13 +61,20 @@ const Roll: React.FC = () => {
       <div className="p-2 flex flex-col flex-wrap gap-2 justify-center">
         <Button
           variant="contained"
-          onClick={rollDice}
-          disabled={rollResult != null}
+          onClick={handleRollDice}
+          disabled={
+            [0, null].includes(rollResult) || !isPlayerTurn ? false : true
+          }
         >
           Roll
         </Button>
-        <p className="text-black">Roll: {rollResult ? rollResult : "?"}</p>
-        <p className="text-black">Moves left: {movesLeft ? movesLeft : "?"}</p>
+        <p className="text-black">
+          Roll: {[0, null].includes(rollResult) ? "?" : rollResult}
+        </p>
+        <p className="text-black">
+          Moves left:{" "}
+          {[0, null].includes(movesLeftDisplay) ? "?" : movesLeftDisplay}
+        </p>
       </div>
     </div>
   );

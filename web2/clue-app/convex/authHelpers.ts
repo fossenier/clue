@@ -3,7 +3,6 @@
 import { compareSync } from "bcrypt-ts";
 import { ConvexError } from "convex/values";
 
-import { Id } from "./_generated/dataModel";
 import { QueryCtx } from "./_generated/server";
 
 // Checks to see if the username meets system requirements

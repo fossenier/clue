@@ -10,26 +10,32 @@ import Roll from "./Roll";
 import Suggest from "./Suggest";
 
 interface PanelProps {
-  // playerId: Id<"player">; // The player's id for appling actions
+  sessionId: string;
+  username: string;
+  gameId: Id<"game">;
+  playerId: Id<"player">; // The player's id for appling actions
   // activePlayerUsername: string; // The display name of the active player
   // isActivePlayerEliminated: boolean; // Whether the active player is eliminated
-  // isPlayerTurn: boolean; // Whether the user is the active player
+  isPlayerTurn: boolean; // Whether the user is the active player
   cardSidebar: string[]; // The game's sidebar cards
   cardHand: string[]; // The user's hand of cards
-  // moveRoll: number; // The number of moves the user rolled
-  // movesLeft: number; // The number of moves the user has left
+  moveRoll: number | null; // The number of moves the user rolled
+  movesLeft: number | null; // The number of moves the user has left
   // playerPositions: { [username: string]: { row: number; col: number } }; // Where the player's are located
 }
 
 const Panel: React.FC<PanelProps> = ({
-  // playerId,
+  sessionId,
+  username,
+  gameId,
+  playerId,
   // activePlayerUsername,
   // isActivePlayerEliminated,
-  // isPlayerTurn,
+  isPlayerTurn,
   cardSidebar,
   cardHand,
-  // moveRoll,
-  // movesLeft,
+  moveRoll,
+  movesLeft,
   // playerPositions,
 }) => {
   return (
@@ -41,8 +47,18 @@ const Panel: React.FC<PanelProps> = ({
         {cardSidebar.length !== 0 ? (
           <Cards cardSourceName="Sidebar" sourceCards={cardSidebar}></Cards>
         ) : null}
-        <Roll></Roll>
-        <Suggest></Suggest>
+        {isPlayerTurn ? (
+          <Roll
+            sessionId={sessionId}
+            username={username}
+            gameId={gameId}
+            playerId={playerId}
+            isPlayerTurn={isPlayerTurn}
+            moveRoll={moveRoll}
+            movesLeft={movesLeft}
+          ></Roll>
+        ) : null}
+        {isPlayerTurn ? <Suggest></Suggest> : null}
       </Stack>
     </div>
   );

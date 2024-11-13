@@ -2,6 +2,7 @@
 
 import { ConvexError, v } from "convex/values";
 
+import { Doc } from "../_generated/dataModel";
 import { query } from "../_generated/server";
 import { validateSession } from "../authHelpers";
 
@@ -33,8 +34,11 @@ export const listPlayers = query({
     }
 
     // Fetch the player documents
-    return Promise.all(
-      game.players.map(({ playerId }) => ctx.db.get(playerId))
+    const players = await Promise.all(
+      (game.players ?? []).map(({ playerId }) => ctx.db.get(playerId))
     );
+
+    // Filter out null values
+    return players.filter((player): player is Doc<"player"> => player !== null);
   },
 });

@@ -21,7 +21,12 @@ export const listGames = query({
     }
 
     // Query the game documents based on the user's game IDs
-    return Promise.all((user.games ?? []).map((gameId) => ctx.db.get(gameId)));
+    const games = await Promise.all(
+      (user.games ?? []).map((gameId) => ctx.db.get(gameId))
+    );
+
+    // Filter out null values
+    return games.filter((game): game is Doc<"game"> => game !== null);
   },
 });
 

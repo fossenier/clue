@@ -1,6 +1,6 @@
-import React from "react";
+"use client";
 
-import { SUSPECTS } from "@constants/index";
+import React from "react";
 
 interface CardsProps {
   cardSourceName: string;

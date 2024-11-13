@@ -1,17 +1,25 @@
 "use client";
 
-import { useMutation, useQuery } from 'convex/react';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { getCookie } from 'typescript-cookie';
+import { useMutation, useQuery } from "convex/react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { getCookie } from "typescript-cookie";
 
-import { api } from '@/convex/_generated/api';
-import { Doc, Id } from '@/convex/_generated/dataModel';
-import { SUSPECTS } from '@constants/index';
-import { algorithms } from '@convex/clue/gameLogic';
-import { Button, FormControl, InputLabel, MenuItem, Select, Stack, TextField } from '@mui/material';
+import { api } from "@/convex/_generated/api";
+import { Doc, Id } from "@/convex/_generated/dataModel";
+import { SUSPECTS } from "@constants/index";
+import { algorithms } from "@convex/clue/gameLogic";
+import {
+  Button,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  Stack,
+  TextField,
+} from "@mui/material";
 
-import { useGameContext } from '../gameContext';
+import { useGameContext } from "../gameContext";
 
 const Games: React.FC = () => {
   // Routing and context management
@@ -57,7 +65,7 @@ const Games: React.FC = () => {
   // Show the user's games when the Convex query returns
   useEffect(() => {
     if (queryResult) {
-      setUserGames(queryResult.filter((game) => game !== null));
+      setUserGames(queryResult);
     }
   }, [queryResult]);
 

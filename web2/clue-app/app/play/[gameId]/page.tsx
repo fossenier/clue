@@ -16,7 +16,7 @@ export default function ClueView() {
   // Context management (this will hold the game data if the user comes
   // from /games)
   const params = useParams();
-  const gameId = params.gameId;
+  const gameId = params.gameId as Id<"game">;
   const gameContext = useGameContext();
 
   // Session Id and username from cookies
@@ -40,7 +40,7 @@ export default function ClueView() {
       ? {
           sessionId: sessionId,
           username: username,
-          gameId: gameId as Id<"game">,
+          gameId: gameId,
         }
       : "skip"
   );
@@ -53,7 +53,7 @@ export default function ClueView() {
       ? {
           sessionId: sessionId,
           username: username,
-          gameId: gameId as Id<"game">,
+          gameId: gameId,
         }
       : "skip"
   );
@@ -79,17 +79,10 @@ export default function ClueView() {
   useEffect(() => {
     if (playerQueryResult) {
       setUserPlayer(
-        playerQueryResult.find((player) => player?.username === username) ??
-          undefined
+        playerQueryResult.find((player) => player.username === username)
       );
       setOtherPlayers(
-        playerQueryResult.filter((player) => {
-          if (player) {
-            return player.username !== username;
-          } else {
-            return false;
-          }
-        }) as Doc<"player">[]
+        playerQueryResult.filter((player) => player.username !== username)
       );
     }
   }, [playerQueryResult, username]);
@@ -100,9 +93,23 @@ export default function ClueView() {
   };
 
   const formatPanelData = () => {
+    console.log(game?.activePlayer, userPlayer?._id);
     return {
+      sessionId: sessionId ?? "",
+      username: username ?? "",
+      gameId: gameId ?? ("" as Id<"game">),
+      playerId: userPlayer?._id ?? ("" as Id<"player">),
+      isPlayerTurn: game?.activePlayer === userPlayer?._id,
       cardSidebar: game?.cardSidebar ?? ["Loading..."],
       cardHand: userPlayer?.cards ?? ["Loading..."],
+      moveRoll:
+        game?.activePlayer === userPlayer?._id
+          ? userPlayer?.moveRoll ?? 0
+          : null,
+      movesLeft:
+        game?.activePlayer === userPlayer?._id
+          ? userPlayer?.movesLeft ?? 0
+          : null,
     };
   };
 

@@ -3,10 +3,11 @@
 import { ConvexError, v } from "convex/values";
 
 import { COORDS, ROOMS, SUSPECTS, WEAPONS } from "../../app/constants/index";
-import { Doc, Id } from "../_generated/dataModel";
+import { Doc } from "../_generated/dataModel";
 import { mutation, MutationCtx } from "../_generated/server";
 import { fetchUser, validateSession } from "../authHelpers";
 import { algorithms } from "../clue/gameLogic";
+import { randomInt } from "../generalHelpers";
 import { createPlayer } from "./playerActions";
 
 // This is what the client will be passing
@@ -24,10 +25,6 @@ type ValidatedPlayer = {
   suspect: SuspectKey;
   user?: Doc<"user">;
 };
-
-function randomInt(max: number): number {
-  return Math.floor(Math.random() * max);
-}
 
 // Make sure each passed player conforms to the ValidatedPlayer type
 async function validatePlayers(
@@ -71,9 +68,9 @@ async function validatePlayers(
 // Helper function to draw murderer and remaining cards
 function drawMurdererCards() {
   const murdererCards = [
-    SUSPECTS[randomInt(SUSPECTS.length)],
-    WEAPONS[randomInt(WEAPONS.length)],
-    ROOMS[randomInt(ROOMS.length)],
+    SUSPECTS[randomInt(0, SUSPECTS.length - 1)],
+    WEAPONS[randomInt(0, WEAPONS.length - 1)],
+    ROOMS[randomInt(0, ROOMS.length - 1)],
   ];
   const remainingCards = [...SUSPECTS, ...WEAPONS, ...ROOMS].filter(
     (card) => !murdererCards.includes(card)
@@ -116,7 +113,7 @@ export const createGame = mutation({
     const validatedPlayerEntries = await Promise.all(
       players.map(async (validatedPlayer) => {
         const hand = Array.from({ length: handSize }, () => {
-          const randomIndex = randomInt(remainingCards.length);
+          const randomIndex = randomInt(0, remainingCards.length - 1);
           return remainingCards.splice(randomIndex, 1)[0];
         });
 
