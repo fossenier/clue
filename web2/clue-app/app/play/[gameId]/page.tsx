@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "convex/react";
+import { on } from "events";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getCookie } from "typescript-cookie";
@@ -9,7 +10,7 @@ import { useGameContext } from "@/app/gameContext";
 import { api } from "@/convex/_generated/api";
 import { Doc, Id } from "@/convex/_generated/dataModel";
 
-import Board from "./Board";
+import Board, { BoardProps, PlayerData } from "./Board";
 import Panel from "./Panel";
 
 export default function ClueView() {
@@ -112,6 +113,30 @@ export default function ClueView() {
     };
   };
 
+  const formatBoardData = (): BoardProps => {
+    if (!otherPlayers) {
+      return {
+        onTileSelect: handleBoardTileSelect,
+        players: {},
+      };
+    }
+
+    return {
+      onTileSelect: handleBoardTileSelect,
+      players: [...otherPlayers, ...(userPlayer ? [userPlayer] : [])].reduce(
+        (acc: Record<string, PlayerData>, player) => {
+          acc[player.suspect] = {
+            username: player.username,
+            row: player.row,
+            col: player.col,
+          };
+          return acc;
+        },
+        {}
+      ),
+    };
+  };
+
   return (
     <div>
       <div className="flex h-dvh w-dvw">
@@ -119,7 +144,7 @@ export default function ClueView() {
           <Panel {...formatPanelData()} />
         </div>
         <div className="w-5/6">
-          <Board onTileSelect={handleBoardTileSelect} />
+          <Board {...formatBoardData()} />
         </div>
       </div>
     </div>
