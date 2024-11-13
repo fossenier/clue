@@ -36,7 +36,6 @@ async function validatePlayers(
   await Promise.all(
     players.map(async (player) => {
       if (player.username && player.suspect in COORDS) {
-        console.log("This is a valid suspect human player");
         // The username is provided, the client intends this to be a human
         const user = await fetchUser(ctx, player.username);
         if (user) {
@@ -52,7 +51,6 @@ async function validatePlayers(
         algorithms.includes(player.algorithm) &&
         player.suspect in COORDS
       ) {
-        console.log("This is a valid algorithm player");
         // The algorithm is provided, the client intends this to be a bot
         validatedPlayers.push({
           ...player,

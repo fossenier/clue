@@ -15,7 +15,6 @@ export async function createPlayer(
   row: number,
   col: number
 ) {
-  console.log("createPlayer");
   const playerId = await ctx.db.insert("player", {
     username,
     algorithm,

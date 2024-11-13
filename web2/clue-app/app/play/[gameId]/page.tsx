@@ -93,7 +93,6 @@ export default function ClueView() {
   };
 
   const formatPanelData = () => {
-    console.log(game?.activePlayer, userPlayer?._id);
     return {
       sessionId: sessionId ?? "",
       username: username ?? "",

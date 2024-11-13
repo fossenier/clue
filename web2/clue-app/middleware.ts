@@ -11,7 +11,6 @@ export function middleware(request: NextRequest) {
     (request.nextUrl.pathname === "/login" ||
       request.nextUrl.pathname === "/register")
   ) {
-    console.log(request.url);
     return NextResponse.redirect(new URL("/games", request.url));
   }
 
@@ -21,7 +20,6 @@ export function middleware(request: NextRequest) {
     request.nextUrl.pathname !== "/login" &&
     request.nextUrl.pathname !== "/register"
   ) {
-    console.log(request.url);
     return NextResponse.redirect(new URL("/login", request.url));
   }
 

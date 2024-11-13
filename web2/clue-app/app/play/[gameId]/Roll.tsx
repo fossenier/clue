@@ -38,9 +38,6 @@ const Roll: React.FC<RollProps> = ({
   // Roll the user's dice for the turn
   const handleRollDice = async () => {
     if (sessionId && username && gameId && playerId) {
-      console.log(
-        `Rolling the dice ${sessionId} ${username} ${gameId} ${playerId}`
-      );
       const dice = await rollDice({
         sessionId: sessionId,
         username: username,

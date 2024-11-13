@@ -2,8 +2,6 @@
 import { useRouter } from "next/navigation";
 import React from "react";
 
-import { BOARD } from "@constants/index";
-
 export default function Test() {
   const router = useRouter();
 
