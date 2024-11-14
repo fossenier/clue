@@ -1,11 +1,12 @@
 "use client";
 
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { on } from "events";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getCookie } from "typescript-cookie";
 
+import { BOARD } from "@/app/constants";
 import { useGameContext } from "@/app/gameContext";
 import { api } from "@/convex/_generated/api";
 import { Doc, Id } from "@/convex/_generated/dataModel";
@@ -88,9 +89,41 @@ export default function ClueView() {
     }
   }, [playerQueryResult, username]);
 
+  // Setup the "move player" functionality
+  const movePlayer = useMutation(api.mutations.playerActions.movePlayer);
+
   // The idx is given by Board
-  const handleBoardTileSelect = (idx: number) => {
-    console.log(`Selected row ${Math.floor(idx / 25)} and column ${idx % 25}`);
+  const handleBoardTileSelect = async (row: number, col: number) => {
+    // The user is trying to move here, assess if they are currently able to move
+    if (game?.activePlayer !== userPlayer?._id) {
+      console.log("Not your turn");
+      return;
+    }
+    if (userPlayer?.movesLeft === 0) {
+      console.log("No moves left");
+      return;
+    }
+
+    // Make sure it's not a wall
+    if (BOARD[row][col] === "x") {
+      console.log("Can't move to a wall");
+      return;
+    }
+
+    const result = await movePlayer({
+      sessionId: sessionId ?? "",
+      username: username ?? "",
+      gameId: gameId,
+      playerId: userPlayer?._id ?? ("" as Id<"player">),
+      row: row,
+      col: col,
+    });
+
+    if (result) {
+      console.log("Moved player");
+    } else {
+      console.log("Failed to move player");
+    }
   };
 
   const formatPanelData = () => {

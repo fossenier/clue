@@ -9,7 +9,7 @@ export interface PlayerData {
 }
 
 export interface BoardProps {
-  onTileSelect: (tile: any) => void;
+  onTileSelect: (row: number, col: number) => void;
   players: Record<string, PlayerData>; // key is suspect
 }
 
@@ -49,7 +49,7 @@ const Board: React.FC<BoardProps> = ({ onTileSelect, players }) => {
               key={rowIdx * 25 + colIdx}
               className={`w-1/25 border-2 border-gray-300 box-border cursor-pointer text-sm overflow-hidden whitespace-nowrap font-bold text-white
                 ${tileBackground(tile, rowIdx, colIdx)}`}
-              onClick={() => onTileSelect(rowIdx * 25 + colIdx)}
+              onClick={() => onTileSelect(rowIdx, colIdx)}
             >
               {tileText(tile, rowIdx, colIdx)}
             </div>

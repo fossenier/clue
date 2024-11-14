@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation } from "convex/react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
@@ -31,6 +31,11 @@ const Roll: React.FC<RollProps> = ({
   const [movesLeftDisplay, setMovesLeftDisplay] = useState<number | null>(
     movesLeft
   );
+
+  // Update movesLeftDisplay when the movesLeft prop changes
+  useEffect(() => {
+    setMovesLeftDisplay(movesLeft);
+  }, [movesLeft]);
 
   // Convex mutation to roll the dice
   const rollDice = useMutation(api.mutations.playerActions.rollDice);
@@ -69,8 +74,7 @@ const Roll: React.FC<RollProps> = ({
           Roll: {[0, null].includes(rollResult) ? "?" : rollResult}
         </p>
         <p className="text-black">
-          Moves left:{" "}
-          {[0, null].includes(movesLeftDisplay) ? "?" : movesLeftDisplay}
+          Moves left: {movesLeftDisplay !== null ? movesLeftDisplay : "?"}
         </p>
       </div>
     </div>

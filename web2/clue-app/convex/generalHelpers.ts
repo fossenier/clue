@@ -11,7 +11,6 @@ export function randomInt(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-
 /**
  * Generates a random number within a specified range.
  *
@@ -19,9 +18,14 @@ export function randomInt(min: number, max: number): number {
  * @param stop - The end of the range (exclusive).
  * @param step - The step between each number in the range. Defaults to 1.
  * @returns A random number within the specified range.
+ *
  * @throws Will throw an error if the step is zero.
  */
-export function randomRange(start: number, stop: number, step: number = 1): number {
+export function randomRange(
+  start: number,
+  stop: number,
+  step: number = 1
+): number {
   if (step === 0) {
     throw new Error("Step cannot be zero");
   }

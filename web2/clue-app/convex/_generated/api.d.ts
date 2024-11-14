@@ -16,6 +16,7 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as authHelpers from "../authHelpers.js";
+import type * as boardHelpers from "../boardHelpers.js";
 import type * as clue_gameLogic from "../clue/gameLogic.js";
 import type * as generalHelpers from "../generalHelpers.js";
 import type * as mutations_gameActions from "../mutations/gameActions.js";
@@ -34,6 +35,7 @@ import type * as queries_playerLoading from "../queries/playerLoading.js";
  */
 declare const fullApi: ApiFromModules<{
   authHelpers: typeof authHelpers;
+  boardHelpers: typeof boardHelpers;
   "clue/gameLogic": typeof clue_gameLogic;
   generalHelpers: typeof generalHelpers;
   "mutations/gameActions": typeof mutations_gameActions;
