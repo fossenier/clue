@@ -91,6 +91,8 @@ export default function ClueView() {
 
   // Setup the "move player" functionality
   const movePlayer = useMutation(api.mutations.playerActions.movePlayer);
+  // Also the turn ending actions
+  const accuse = useMutation(api.mutations.playerActions.accuse);
 
   // The idx is given by Board
   const handleBoardTileSelect = async (row: number, col: number) => {
@@ -126,6 +128,23 @@ export default function ClueView() {
     }
   };
 
+  // Make a final accusation
+  const handleAccuse = async (cards: string[]) => {
+    const result = await accuse({
+      sessionId: sessionId ?? "",
+      username: username ?? "",
+      gameId: gameId,
+      playerId: userPlayer?._id ?? ("" as Id<"player">),
+      cards: cards,
+    });
+
+    if (result) {
+      console.log("Accused");
+    } else {
+      console.log("Failed to accuse");
+    }
+  };
+
   const formatPanelData = () => {
     return {
       sessionId: sessionId ?? "",
@@ -147,6 +166,7 @@ export default function ClueView() {
         game?.activePlayer === userPlayer?._id
           ? userPlayer?.movesLeft ?? 0
           : null,
+      accuse: handleAccuse,
     };
   };
 

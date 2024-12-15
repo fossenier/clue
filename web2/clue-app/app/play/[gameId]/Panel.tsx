@@ -23,6 +23,7 @@ interface PanelProps {
   moveRoll: number | null; // The number of moves the user rolled
   movesLeft: number | null; // The number of moves the user has left
   // playerPositions: { [username: string]: { row: number; col: number } }; // Where the player's are located
+  accuse: (cards: string[]) => void; // The function to accuse
 }
 
 const Panel: React.FC<PanelProps> = ({
@@ -39,6 +40,7 @@ const Panel: React.FC<PanelProps> = ({
   moveRoll,
   movesLeft,
   // playerPositions,
+  accuse,
 }) => {
   return (
     <div className="h-full w-full bg-white">
@@ -60,7 +62,9 @@ const Panel: React.FC<PanelProps> = ({
             movesLeft={movesLeft}
           ></Roll>
         ) : null}
-        {isPlayerTurn ? <Suggest playerRoom={playerRoom}></Suggest> : null}
+        {isPlayerTurn ? (
+          <Suggest playerRoom={playerRoom} accuse={accuse}></Suggest>
+        ) : null}
       </Stack>
     </div>
   );

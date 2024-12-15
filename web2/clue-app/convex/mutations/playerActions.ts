@@ -181,6 +181,8 @@ export const movePlayer = mutation({
  *
  * @param ctx - The context object containing the database and other utilities.
  *
+ * @returns A promise that resolves to `true` if the accusation was successfully processed.
+ *
  * @throws {ConvexError} If the user cannot be authenticated.
  *
  * @remarks
@@ -199,11 +201,13 @@ export const accuse = mutation({
   },
   handler: async (ctx, args) => {
     // Simplest check, make sure the cards are valid
+    // TODO: Make this NOT buggy (doesn't work?)
     if (!validateCards(args.cards)) {
       throw new ConvexError(
         "Error accusing those cards, please accuse valid cards."
       );
     }
+
     // Validate the user
     const user = await validateSession(ctx, args.sessionId, args.username);
     if (!user) {
@@ -221,7 +225,6 @@ export const accuse = mutation({
       args.playerId
     );
     const game = result[0] as Doc<"game">;
-    const player = result[1] as Doc<"player">;
 
     // Check to see if the player guessed the murderer correctly with the cards they proposed
     if (args.cards.every((card) => game.murderer.includes(card))) {
@@ -241,5 +244,7 @@ export const accuse = mutation({
 
     // This is a turn ending action
     nextPlayer(ctx, game);
+
+    return true;
   },
 });

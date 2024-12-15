@@ -1,14 +1,17 @@
+import { useMutation } from "convex/react";
 import React, { useEffect } from "react";
 
+import { api } from "@/convex/_generated/api";
 import { ROOMS, SUSPECTS, WEAPONS } from "@constants/index";
 import { Button, FormControl, InputLabel, MenuItem } from "@mui/material";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 
 interface PanelProps {
   playerRoom: string | null;
+  accuse: (cards: string[]) => void;
 }
 
-const Suggest: React.FC<PanelProps> = ({ playerRoom }) => {
+const Suggest: React.FC<PanelProps> = ({ playerRoom, accuse }) => {
   const [room, setRoom] = React.useState<string>("");
   const [suspect, setSuspect] = React.useState<string>("");
   const [weapon, setWeapon] = React.useState<string>("");
@@ -28,11 +31,14 @@ const Suggest: React.FC<PanelProps> = ({ playerRoom }) => {
     setWeapon(event.target.value as string);
   };
 
+  // Returns true if an error is raised
   const raiseEmptyFieldsError = () => {
     if (room && suspect && weapon) {
       setIncomplete(false);
+      return false;
     } else {
       setIncomplete(true);
+      return true;
     }
   };
 
@@ -41,7 +47,10 @@ const Suggest: React.FC<PanelProps> = ({ playerRoom }) => {
   };
 
   const makeAccusation = () => {
-    raiseEmptyFieldsError();
+    // Only make the accusation when there's a suspect && weapon && room
+    if (!raiseEmptyFieldsError()) {
+      accuse([room, suspect, weapon]);
+    }
   };
 
   useEffect(() => {
