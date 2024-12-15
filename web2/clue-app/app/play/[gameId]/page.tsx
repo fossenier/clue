@@ -133,6 +133,10 @@ export default function ClueView() {
       gameId: gameId ?? ("" as Id<"game">),
       playerId: userPlayer?._id ?? ("" as Id<"player">),
       isPlayerTurn: game?.activePlayer === userPlayer?._id,
+      playerRoom:
+        userPlayer?.row !== undefined && userPlayer?.col !== undefined
+          ? BOARD[userPlayer.row][userPlayer.col]
+          : null,
       cardSidebar: game?.cardSidebar ?? ["Loading..."],
       cardHand: userPlayer?.cards ?? ["Loading..."],
       moveRoll:

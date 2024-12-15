@@ -17,6 +17,7 @@ interface PanelProps {
   // activePlayerUsername: string; // The display name of the active player
   // isActivePlayerEliminated: boolean; // Whether the active player is eliminated
   isPlayerTurn: boolean; // Whether the user is the active player
+  playerRoom: string | null; // The room the player is in or null
   cardSidebar: string[]; // The game's sidebar cards
   cardHand: string[]; // The user's hand of cards
   moveRoll: number | null; // The number of moves the user rolled
@@ -32,6 +33,7 @@ const Panel: React.FC<PanelProps> = ({
   // activePlayerUsername,
   // isActivePlayerEliminated,
   isPlayerTurn,
+  playerRoom,
   cardSidebar,
   cardHand,
   moveRoll,
@@ -58,7 +60,7 @@ const Panel: React.FC<PanelProps> = ({
             movesLeft={movesLeft}
           ></Roll>
         ) : null}
-        {isPlayerTurn ? <Suggest></Suggest> : null}
+        {isPlayerTurn ? <Suggest playerRoom={playerRoom}></Suggest> : null}
       </Stack>
     </div>
   );

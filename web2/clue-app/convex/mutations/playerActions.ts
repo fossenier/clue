@@ -6,7 +6,9 @@ import { Doc } from "../_generated/dataModel";
 import { mutation, MutationCtx } from "../_generated/server";
 import { validatePlayerAction, validateSession } from "../authHelpers";
 import { validateTargetLocation } from "../boardHelpers";
+import { nextPlayer } from "../gameHelpers";
 import { randomInt } from "../generalHelpers";
+import { validateCards } from "../playerHelpers";
 
 /**
  * Creates a new player in the game with the specified attributes.
@@ -164,5 +166,80 @@ export const movePlayer = mutation({
     });
 
     return true;
+  },
+});
+
+/**
+ * Mutation to handle the accusation action in the game.
+ *
+ * @param args - The arguments for the mutation.
+ * @param args.sessionId - The session ID of the user making the accusation.
+ * @param args.username - The username of the user making the accusation.
+ * @param args.gameId - The ID of the game in which the accusation is being made.
+ * @param args.playerId - The ID of the player making the accusation.
+ * @param args.cards - The cards proposed by the player as the murderer's cards.
+ *
+ * @param ctx - The context object containing the database and other utilities.
+ *
+ * @throws {ConvexError} If the user cannot be authenticated.
+ *
+ * @remarks
+ * This mutation validates the user and the player's action, checks if the player's accusation is correct,
+ * and updates the game state accordingly. If the accusation is correct, the player is marked as victorious
+ * and all other players are eliminated. If the accusation is incorrect, the player is eliminated.
+ * This action also ends the current player's turn and moves to the next player.
+ */
+export const accuse = mutation({
+  args: {
+    sessionId: v.string(),
+    username: v.string(),
+    gameId: v.id("game"),
+    playerId: v.id("player"),
+    cards: v.array(v.string()),
+  },
+  handler: async (ctx, args) => {
+    // Simplest check, make sure the cards are valid
+    if (!validateCards(args.cards)) {
+      throw new ConvexError(
+        "Error accusing those cards, please accuse valid cards."
+      );
+    }
+    // Validate the user
+    const user = await validateSession(ctx, args.sessionId, args.username);
+    if (!user) {
+      throw new ConvexError(
+        "Error authenticating client, please try logging in again."
+      );
+    }
+
+    // Make sure this player is allowed to act right now
+    const result = await validatePlayerAction(
+      ctx,
+      args.sessionId,
+      args.username,
+      args.gameId,
+      args.playerId
+    );
+    const game = result[0] as Doc<"game">;
+    const player = result[1] as Doc<"player">;
+
+    // Check to see if the player guessed the murderer correctly with the cards they proposed
+    if (args.cards.every((card) => game.murderer.includes(card))) {
+      // This player is victorious
+      await ctx.db.patch(args.playerId, { victorious: true });
+      // All other players are eliminated
+      game.players.forEach((player) => {
+        if (player.playerId == args.playerId) {
+          return;
+        }
+        ctx.db.patch(player.playerId, { eliminated: true });
+      });
+    } else {
+      // This player is eliminated
+      ctx.db.patch(args.playerId, { eliminated: true });
+    }
+
+    // This is a turn ending action
+    nextPlayer(ctx, game);
   },
 });

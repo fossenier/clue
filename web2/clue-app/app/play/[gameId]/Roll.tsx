@@ -64,9 +64,7 @@ const Roll: React.FC<RollProps> = ({
         <Button
           variant="contained"
           onClick={handleRollDice}
-          disabled={
-            [0, null].includes(rollResult) || !isPlayerTurn ? false : true
-          }
+          disabled={![0, null].includes(rollResult) || !isPlayerTurn}
         >
           Roll
         </Button>

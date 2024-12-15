@@ -4,7 +4,11 @@ import { ROOMS, SUSPECTS, WEAPONS } from "@constants/index";
 import { Button, FormControl, InputLabel, MenuItem } from "@mui/material";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 
-const Suggest: React.FC = () => {
+interface PanelProps {
+  playerRoom: string | null;
+}
+
+const Suggest: React.FC<PanelProps> = ({ playerRoom }) => {
   const [room, setRoom] = React.useState<string>("");
   const [suspect, setSuspect] = React.useState<string>("");
   const [weapon, setWeapon] = React.useState<string>("");
@@ -110,12 +114,17 @@ const Suggest: React.FC = () => {
           <p></p>
         )}
 
-        <Button variant="contained" onClick={makeSuggestion}>
+        <Button
+          variant="contained"
+          onClick={makeSuggestion}
+          disabled={playerRoom?.toLowerCase() !== room.toLowerCase()}
+        >
           Suggest
         </Button>
         <Button variant="contained" onClick={makeAccusation}>
           Accuse
         </Button>
+        <Button variant="contained">Skip</Button>
       </div>
     </div>
   );

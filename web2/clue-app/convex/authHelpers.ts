@@ -1,10 +1,10 @@
 "use server";
 
-import { compareSync } from "bcrypt-ts";
-import { ConvexError } from "convex/values";
+import { compareSync } from 'bcrypt-ts';
+import { ConvexError } from 'convex/values';
 
-import { Doc, Id } from "./_generated/dataModel";
-import { QueryCtx } from "./_generated/server";
+import { Doc, Id } from './_generated/dataModel';
+import { QueryCtx } from './_generated/server';
 
 /**
  * Validates the given username based on predefined criteria.
@@ -129,6 +129,11 @@ export async function validatePlayerAction(
   // Make sure this player is the user's player (kinda superfluous, but easy computationally)
   if (player.username !== username) {
     throw new ConvexError("Error fetching requested player, please try again.");
+  }
+
+  // Also make sure they're not eliminated
+  if (player.eliminated) {
+    throw new ConvexError("Error acting, you have been eliminated.");
   }
 
   return [game as Doc<"game">, player as Doc<"player">];
