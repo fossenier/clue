@@ -38,6 +38,8 @@ async function validatePlayers(
       if (player.username && player.suspect in COORDS) {
         // The username is provided, the client intends this to be a human
         const user = await fetchUser(ctx, player.username);
+        // Erase the algorithm if it's present
+        player.algorithm = "";
         if (user) {
           // The username is valid and in the system
           validatedPlayers.push({
@@ -46,12 +48,15 @@ async function validatePlayers(
             user: user,
           });
         }
+        // Else not a valid user, so we don't add them to the game
       } else if (
         player.algorithm &&
         algorithms.includes(player.algorithm) &&
         player.suspect in COORDS
       ) {
         // The algorithm is provided, the client intends this to be a bot
+        // Erase the username if it's present
+        player.username = "";
         validatedPlayers.push({
           ...player,
           suspect: player.suspect as SuspectKey,
